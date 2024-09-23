@@ -12,20 +12,15 @@ const Home = () => {
 
     try {
       const response = await fetch("http://localhost:8080/analyze", {
-        // Update the URL to point to your backend
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ data: inputValue }), // Sending the GitHub URL as 'data'
+        body: JSON.stringify({ githubUrl: inputValue }),
       });
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
       const result = await response.json();
-      console.log("Success:", result); // This will log the response from the backend
+      console.log("Success:", result);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -38,7 +33,7 @@ const Home = () => {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="Github URL"
+          placeholder="GitHub URL"
         />
         <button type="submit">Submit</button>
       </form>
