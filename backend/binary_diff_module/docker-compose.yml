@@ -1,0 +1,22 @@
+version: "3"
+services:
+  ghidra:
+    build:
+      context: .
+      dockerfile: Dockerfile.ghidra
+    container_name: ghidra-analysis
+    volumes:
+      - ./binaries:/analysis/binaries
+      - ./ghidra_scripts:/analysis/scripts
+      - ./output:/analysis/output
+      - ./c_source/version1/main.c:/app/c_source/version1/main.c
+      - ./c_source/version2/main.c:/app/c_source/version2/main.c
+      - ./input_binaries:/app/input_binaries # Make sure this exists
+    command: >
+      /ghidra/support/analyzeHeadless . projectName -scriptPath /analysis/scripts -postScript diff_binaries.py /analysis/binaries/binary1 /analysis/binaries/binary2
+    networks:
+      - analysis-network
+
+networks:
+  analysis-network:
+    driver: bridge

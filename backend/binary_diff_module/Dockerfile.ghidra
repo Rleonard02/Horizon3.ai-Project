@@ -1,0 +1,10 @@
+# Extend the existing blacktop/ghidra image
+FROM blacktop/ghidra
+
+# Install gcc
+RUN apt-get update && apt-get install -y gcc
+
+# Set the working directory (optional, if needed)
+WORKDIR /analysis
+
+# You can add more setup or environment variables if needed
