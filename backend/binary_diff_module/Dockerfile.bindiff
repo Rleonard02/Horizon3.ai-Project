@@ -1,0 +1,20 @@
+FROM ubuntu:latest
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    openjdk-11-jre-headless \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download BinDiff
+RUN wget https://github.com/google/bindiff/archive/refs/tags/v8.zip -O /tmp/bindiff.zip
+
+# Unzip and list contents
+RUN unzip /tmp/bindiff.zip -d /opt \
+    && echo "Listing contents of /opt/bindiff:" \
+    && find /opt -type f -print
+
+# Attempt to find the BinDiff executable or build scripts
+RUN echo "Checking for BinDiff executables or build scripts..." \
+    && find /opt -type f -executable -print

@@ -1,22 +1,26 @@
 version: "3"
 services:
-  ghidra:
-    build:
-      context: .
-      dockerfile: Dockerfile.ghidra
-    container_name: ghidra-analysis
+  ghidra-decompiler:
+    container_name: ghidra-decompiler
+    image: cincan/ghidra-decompiler
+    user: root
     volumes:
-      - ./binaries:/analysis/binaries
       - ./ghidra_scripts:/analysis/scripts
-      - ./output:/analysis/output
+      - ./output:/output
       - ./c_source/version1/main.c:/app/c_source/version1/main.c
       - ./c_source/version2/main.c:/app/c_source/version2/main.c
-      - ./input_binaries:/app/input_binaries # Make sure this exists
+      - ./input_binaries:/app/input_binaries
     command: >
-      /ghidra/support/analyzeHeadless . projectName -scriptPath /analysis/scripts -postScript diff_binaries.py /analysis/binaries/binary1 /analysis/binaries/binary2
-    networks:
-      - analysis-network
+      decompile /app/input_binaries
 
-networks:
-  analysis-network:
-    driver: bridge
+  bindiff:
+    container_name: bindiff-analyzer
+    build:
+      context: . # Directory where Dockerfile is located
+      dockerfile: Dockerfile.bindiff # The Dockerfile to use
+    volumes:
+      - ./input_binaries:/app/input_binaries
+      - ./diff_results:/app/diff_results
+      - ./output:/output
+    command: >
+      bindiff /app/input_binaries/binary1 /app/input_binaries/binary2 --output=/output/diff_report.txt

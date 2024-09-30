@@ -9,7 +9,7 @@ def compile_c_file(source_path, output_binary):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         
-        subprocess.call(["gcc", source_path, "-o", output_binary])
+        subprocess.call(["gcc", "-g", source_path, "-o", output_binary])
         print("Compiled {} to {}".format(source_path, output_binary))
     except subprocess.CalledProcessError as e:
         print("Error compiling {}: {}".format(source_path, e))
@@ -26,7 +26,6 @@ def run_ghidra_diff(binary1, binary2, output_dir):
         "-import", binary1,
         "-import", binary2,
         "-scriptPath", "/analysis/scripts/",
-        "-postScript", "BinDiffScript.py", 
         "-log", os.path.join(output_dir, "ghidra_diff.log"),
         "-deleteProject"
     ]
@@ -50,8 +49,8 @@ if __name__ == "__main__":
         os.makedirs(output_dir)
     
     # Compile C files to binaries
-    compile_c_file(c_source1, binary1)
-    compile_c_file(c_source2, binary2)
+    # compile_c_file(c_source1, binary1)
+    # compile_c_file(c_source2, binary2)
     
     # Run Ghidra binary diff on the compiled binaries
     if os.path.exists(binary1) and os.path.exists(binary2):
