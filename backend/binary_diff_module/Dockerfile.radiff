@@ -1,0 +1,5 @@
+FROM radare/radare2
+
+# Set entrypoint and command (empty to allow overriding)
+ENTRYPOINT []
+CMD []
