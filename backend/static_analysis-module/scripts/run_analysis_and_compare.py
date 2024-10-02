@@ -80,6 +80,9 @@ sonar.sources=.
 sonar.language=py
 sonar.sourceEncoding=UTF-8
 sonar.login={SONARQUBE_TOKEN}
+sonar.scm.enabled=false
+sonar.python.version=3
+sonar.verbose=true
 """)
         
         # Define absolute paths
