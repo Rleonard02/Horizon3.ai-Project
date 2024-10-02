@@ -1,0 +1,13 @@
+version: '3'
+services:
+  codeql:
+    build: .  # Assuming the Dockerfile is in the current codeql folder
+    container_name: codeql
+    volumes:
+      - ../source_code:/source_code  # Mount source_code in the container as /source_code
+      - ./reports:/reports           # Mount reports in the container as /reports
+    environment:
+      LANGUAGE: python
+      THREADS: 4
+    command: bash -c "codeql database create /reports/codeql_db --language=python --source-root=/source_code && \
+                      codeql database analyze /reports/codeql_db --format=sarif-latest --output=/reports/codeql_output.sarif"
