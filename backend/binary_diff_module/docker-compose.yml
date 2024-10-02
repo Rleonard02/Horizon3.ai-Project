@@ -5,7 +5,6 @@ services:
     volumes:
       - ./input_binaries:/app/input_binaries
       - ./output:/output
-    # Do not override entrypoint or command
 
   radiff:
     build:

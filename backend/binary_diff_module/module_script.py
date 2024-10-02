@@ -5,12 +5,11 @@ import json
 import sys
 
 
-# Helper function to extract differences from radiff output
 def extract_function_differences(radiff_output_file):
     differences = []
     with open(radiff_output_file, 'r') as f:
         for line in f:
-            # Regex pattern to parse each line
+
             pattern = r'^(\S+)\s+(\d+)\s+(\S+)\s+\|\s+(\S+)\s+\(([\d\.]+)\)\s+\|\s+(\S+)\s+(\d+)\s+(\S+)$'
             match = re.match(pattern, line.strip())
             if match:
@@ -34,7 +33,7 @@ def extract_function_differences(radiff_output_file):
                     })
     return differences
 
-def compile_c_file(source_path, output_binary):
+def compile_file(source_path, output_binary):
     try:
         # Ensure the output directory exists
         output_dir = os.path.dirname(output_binary)
@@ -99,16 +98,16 @@ def run_radiff():
 
 
 def generate_diff_report(radiff_output_file, decompiled_file1, decompiled_file2, report_file):
-    # Extract function differences from radiff output
+    # extract function differences from radiff output
     differences = extract_function_differences(radiff_output_file)
     
-    # Load decompiled code
+    # load decompiled files
     with open(decompiled_file1, 'r') as f:
         decompiled_code1 = f.read()
     with open(decompiled_file2, 'r') as f:
         decompiled_code2 = f.read()
     
-    # Generate report
+    # generate report
     with open(report_file, 'w') as f:
         for diff in differences:
             name = diff['function_name']
@@ -125,9 +124,9 @@ def generate_diff_report(radiff_output_file, decompiled_file1, decompiled_file2,
             f.write("=" * 80 + "\n\n")
 
 def extract_function_code(decompiled_code, function_name):
-    # Remove 'dbg.' or 'sym.' prefixes if present
+    # remove 'dbg.' or 'sym.' prefixes if present
     clean_name = function_name.replace('dbg.', '').replace('sym.', '')
-    # Regex pattern to match the function definition and body
+    # regex pattern to match the function definition and body
     pattern = rf"^[\w\s\*\(\)]+{re.escape(clean_name)}\s*\([^)]*\)\s*\{{.*?^\}}"
     matches = re.findall(pattern, decompiled_code, re.MULTILINE | re.DOTALL)
     if matches:
@@ -146,9 +145,8 @@ if __name__ == "__main__":
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    # compile C files to binaries
-    compile_c_file(c_source1, binary1)
-    compile_c_file(c_source2, binary2)
+    compile_file(c_source1, binary1)
+    compile_file(c_source2, binary2)
     
     # Decompile each binary
     #decompile_binary("/app/input_binaries/binary1.bin", "./output/decompiled_binary1.txt")
