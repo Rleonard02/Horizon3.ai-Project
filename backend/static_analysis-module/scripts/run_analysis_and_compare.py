@@ -22,6 +22,8 @@ if not SONARQUBE_TOKEN:
 # SonarQube server URL
 SONARQUBE_URL = "http://localhost:9000"
 
+SONARQUBE_DOCKER_URL = "http://host.docker.internal:9000"
+
 # Function to wait for SonarQube server to be ready
 def wait_for_sonarqube(url=SONARQUBE_URL, timeout=60):
     print(f"Waiting for SonarQube server at {url} to be ready...")
@@ -74,9 +76,10 @@ def run_sonarscanner(project_key, project_name, source_file):
 sonar.projectKey={project_key}
 sonar.projectName={project_name}
 sonar.projectVersion=1.0
-sonar.sources={source_file}
+sonar.sources=/source_code/{source_file}
 sonar.language=py
 sonar.sourceEncoding=UTF-8
+sonar.login={SONARQUBE_TOKEN}
 sonar.python.coverage.reportPaths=coverage.xml
 """)
         
@@ -92,13 +95,12 @@ sonar.python.coverage.reportPaths=coverage.xml
         # Run SonarScanner Docker container
         scanner_command = [
             "docker", "run", "--rm",
-            "-e", f"SONAR_HOST_URL={SONARQUBE_URL}",
-            "-e", f"SONAR_LOGIN={SONARQUBE_TOKEN}",
+            "-e", f"SONAR_HOST_URL={SONARQUBE_DOCKER_URL}",
             "-v", f"{abs_properties_file}:/opt/sonar-project.properties",
             "-v", f"{abs_source_file}:/source_code/{source_file}",
             "sonarsource/sonar-scanner-cli",
             "-Dproject.settings=/opt/sonar-project.properties",
-            f"-Dsonar.sources=/source_code/{source_file}"
+            # No need to specify sonar.sources again if it's in the properties file
         ]
         
         try:
