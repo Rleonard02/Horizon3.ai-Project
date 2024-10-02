@@ -76,20 +76,19 @@ def run_sonarscanner(project_key, project_name, source_file):
 sonar.projectKey={project_key}
 sonar.projectName={project_name}
 sonar.projectVersion=1.0
-sonar.sources=/source_code/{source_file}
+sonar.sources=.
 sonar.language=py
 sonar.sourceEncoding=UTF-8
 sonar.login={SONARQUBE_TOKEN}
-sonar.python.coverage.reportPaths=coverage.xml
 """)
         
         # Define absolute paths
         abs_properties_file = os.path.abspath(properties_file_path)
-        abs_source_file = os.path.abspath(os.path.join(SOURCE_CODE_FOLDER, source_file))
+        abs_source_folder = os.path.abspath(SOURCE_CODE_FOLDER)
         
-        # Verify source file exists
-        if not os.path.exists(abs_source_file):
-            print(f"Error: Source file '{abs_source_file}' does not exist.")
+        # Verify source folder exists
+        if not os.path.exists(abs_source_folder):
+            print(f"Error: Source folder '{abs_source_folder}' does not exist.")
             return
         
         # Run SonarScanner Docker container
@@ -97,10 +96,10 @@ sonar.python.coverage.reportPaths=coverage.xml
             "docker", "run", "--rm",
             "-e", f"SONAR_HOST_URL={SONARQUBE_DOCKER_URL}",
             "-v", f"{abs_properties_file}:/opt/sonar-project.properties",
-            "-v", f"{abs_source_file}:/source_code/{source_file}",
+            "-v", f"{abs_source_folder}:/usr/src",
             "sonarsource/sonar-scanner-cli",
-            "-Dproject.settings=/opt/sonar-project.properties",
-            # No need to specify sonar.sources again if it's in the properties file
+            "-X",
+            "-Dproject.settings=/opt/sonar-project.properties"
         ]
         
         try:
@@ -109,7 +108,7 @@ sonar.python.coverage.reportPaths=coverage.xml
         except subprocess.CalledProcessError as e:
             print(f"Error during SonarScanner analysis for project '{project_name}': {e}")
             exit(1)
-
+            
 # Function to fetch SonarQube issues via API (optional)
 def fetch_sonarqube_issues(project_key, output_file):
     api_url = f"{SONARQUBE_URL}/api/issues/search"
