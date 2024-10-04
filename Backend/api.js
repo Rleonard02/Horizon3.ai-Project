@@ -22,7 +22,7 @@ router.post('/fetch-repo', async (req, res) => {
     const cloneRepo = (url, dest_url) => {
       return new Promise((resolve, reject) => {
         // Command to clone the repo
-        const command = `git clone "${url}" "${dest_url}"`;
+        const command = `git -C "${dest_url}" pull || git clone "${url}" "${dest_url}"`;
         
         exec(command, (error, stdout, stderr) => {
           if (error) {
