@@ -72,7 +72,7 @@ async function fetchGithubRepo(owner, repo, path = '') {
   } catch (error) {
     console.error('Error fetching GitHub repository:', error);
     throw error;
-  }
+  } 
 }
 
 module.exports = {
