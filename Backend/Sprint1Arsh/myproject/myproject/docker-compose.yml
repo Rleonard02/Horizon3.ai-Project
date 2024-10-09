@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx_conf:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+    depends_on:
+      - endpoint1
+      - endpoint2
+    networks:
+      - webnet
+
+  endpoint1:
+    build: ./webhook-creator
+    environment:
+      - WEBHOOK_URL=/webhook
+      - AUTH_TOKEN=
+    volumes:
+      - shared_data:/shared
+    networks:
+      - webnet
+
+  endpoint2:
+    build: ./webhook-receiver
+    volumes:
+      - shared_data:/shared
+    networks:
+      - webnet
+
+networks:
+  webnet:
+
+volumes:
+  shared_data:
