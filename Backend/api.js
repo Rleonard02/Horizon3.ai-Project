@@ -39,7 +39,7 @@ router.post('/fetch-repo', async (req, res) => {
     const repoPath = "C:/Users/kahow/Documents/Senior Project/Sample Repo/ProjectHierarchy";
     const getCommits = (repoPath) => {
       return new Promise((resolve, reject) => {
-        const command = `git -C "${repoPath}" log --pretty=format:'%H:%T:%an:%ar:%s'`; // Customize the format as needed
+        const command = `git -C "${repoPath}" log --pretty=format:'%H:%T:%an:%ad:%s'`; // Customize the format as needed
     
         exec(command, (error, stdout, stderr) => {
           if (error) {
