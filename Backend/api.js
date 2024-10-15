@@ -7,7 +7,7 @@ require('dotenv').config();
 const { connectToDB } = require('./mongodb');
 
 
-
+const dest_url = process.env.LOCAL_DEST;
 
 const router = express.Router();
 
@@ -34,12 +34,10 @@ router.post('/fetch-repo', async (req, res) => {
         });
       });
     };
-    const dest_url = "C:/Users/kahow/Documents/Senior Project/Sample Repo/ClonePath";
     await cloneRepo(url, dest_url);
-    const repoPath = "C:/Users/kahow/Documents/Senior Project/Sample Repo/ProjectHierarchy";
-    const getCommits = (repoPath) => {
+    const getCommits = (dest_url) => {
       return new Promise((resolve, reject) => {
-        const command = `git -C "${repoPath}" log --pretty=format:'%H:%T:%an:%ad:%s'`; // Customize the format as needed
+        const command = `git -C "${dest_url}" log --pretty=format:'%H:%T:%an:%ad:%s'`; // Customize the format as needed
     
         exec(command, (error, stdout, stderr) => {
           if (error) {
@@ -66,7 +64,7 @@ router.post('/fetch-repo', async (req, res) => {
   }
 
     // now add functionality to loop over all commits?
-    getCommits(repoPath)
+    getCommits(dest_url)
     .then(commits => {
         // Loop through the commits array
         const commitObjects = commits.map(commit => {

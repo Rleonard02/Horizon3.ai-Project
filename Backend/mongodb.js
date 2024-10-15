@@ -1,8 +1,8 @@
 // mongodb.js
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config(); // Load environment variables from .env file
-
-const uri = `mongodb+srv://mongoDB:horizon3@metadata.hymc1.mongodb.net/?retryWrites=true&w=majority`;
+const uri = process.env.MONGO_URI;
+//const uri = `mongodb+srv://mongoDB:${MONGO_PASS}@metadata.hymc1.mongodb.net/?retryWrites=true&w=majority`;
 
 /*const client = new MongoClient(uri, {
     serverApi: {

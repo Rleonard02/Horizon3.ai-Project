@@ -1,7 +1,11 @@
 const neo4j = require('neo4j-driver');
+require('dotenv').config(); // Load environment variables from .env file
+
+const neo_name = process.env.NEO_NAME;
+const neo_pass = process.env.NEO_PASS;
 
 // Initialize Neo4j driver
-const driver = neo4j.driver('bolt://127.0.0.1:7687', neo4j.auth.basic('neo4j', 'horizon3'),
+const driver = neo4j.driver('bolt://127.0.0.1:7687', neo4j.auth.basic(neo_name, neo_pass),
 {encrypted: 'ENCRYPTION_OFF'}
 );
 //const session = driver.session();
