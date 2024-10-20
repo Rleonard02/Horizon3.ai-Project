@@ -1,0 +1,17 @@
+# output-access-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: output-access-pod
+spec:
+  containers:
+    - name: shell
+      image: busybox
+      command: ["sh", "-c", "sleep 3600"]
+      volumeMounts:
+        - name: output
+          mountPath: /output
+  volumes:
+    - name: output
+      persistentVolumeClaim:
+        claimName: pvc-output

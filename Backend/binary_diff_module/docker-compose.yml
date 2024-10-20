@@ -1,0 +1,17 @@
+version: "3"
+services:
+  ghidra-decompiler:
+    image: cincan/ghidra-decompiler
+    volumes:
+      - ./input_binaries:/app/input_binaries
+      - ./output:/output
+
+  radiff:
+    build:
+      context: .
+      dockerfile: Dockerfile.radiff
+    volumes:
+      - ./input_binaries:/app/input_binaries
+      - ./output:/output
+    entrypoint: []
+    command: []
