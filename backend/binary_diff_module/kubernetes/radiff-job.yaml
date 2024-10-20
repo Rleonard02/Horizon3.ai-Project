@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: radiff-analysis-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: radiff
+          image: your_dockerhub_username/radiff:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              radiff2 -A -C /app/input_binaries/binary1.bin /app/input_binaries/binary2.bin > /output/radiff_output.txt
+          volumeMounts:
+            - name: input-binaries
+              mountPath: /app/input_binaries
+            - name: output
+              mountPath: /output
+      restartPolicy: Never
+      volumes:
+        - name: input-binaries
+          persistentVolumeClaim:
+            claimName: pvc-input
+        - name: output
+          persistentVolumeClaim:
+            claimName: pvc-output
