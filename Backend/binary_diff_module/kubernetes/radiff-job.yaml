@@ -4,25 +4,27 @@ metadata:
   name: radiff-analysis-job
 spec:
   template:
+    metadata:
+      labels:
+        app: radiff
     spec:
       containers:
         - name: radiff
-          image: your_dockerhub_username/radiff:latest
+          image: radare/radare2:latest
           command:
-            - /bin/bash
+            - /bin/sh
             - -c
             - |
               radiff2 -A -C /app/input_binaries/binary1.bin /app/input_binaries/binary2.bin > /output/radiff_output.txt
           volumeMounts:
-            - name: input-binaries
+            - name: input-output-storage
               mountPath: /app/input_binaries
-            - name: output
+              subPath: input_binaries
+            - name: input-output-storage
               mountPath: /output
+              subPath: output
       restartPolicy: Never
       volumes:
-        - name: input-binaries
+        - name: input-output-storage
           persistentVolumeClaim:
-            claimName: pvc-input
-        - name: output
-          persistentVolumeClaim:
-            claimName: pvc-output
+            claimName: input-output-pvc

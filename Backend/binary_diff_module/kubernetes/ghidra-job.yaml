@@ -1,29 +1,28 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: ghidra-decompiler-job
-spec:
-  template:
-    spec:
-      containers:
-        - name: ghidra-decompiler
-          image: cincan/ghidra-decompiler
-          command:
-            - /bin/bash
-            - -c
-            - |
-              decompile /app/input_binaries/binary1.bin > /output/decompiled_binary1.txt
-              decompile /app/input_binaries/binary2.bin > /output/decompiled_binary2.txt
-          volumeMounts:
-            - name: input-binaries
-              mountPath: /app/input_binaries
-            - name: output
-              mountPath: /output
-      restartPolicy: Never
-      volumes:
-        - name: input-binaries
-          persistentVolumeClaim:
-            claimName: pvc-input
-        - name: output
-          persistentVolumeClaim:
-            claimName: pvc-output
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: ghidra-decompiler-job
+# spec:
+#   template:
+#     metadata:
+#       labels:
+#         app: ghidra-decompiler
+#     spec:
+#       containers:
+#         - name: ghidra-decompiler
+#           image: cincan/ghidra-decompiler:latest
+#           args:
+#             - "decompile"
+#             - "/app/input_binaries/binary1.bin"
+#           volumeMounts:
+#             - name: input-output-storage
+#               mountPath: /app/input_binaries
+#               subPath: input_binaries
+#             - name: input-output-storage
+#               mountPath: /output
+#               subPath: output
+#       restartPolicy: Never
+#       volumes:
+#         - name: input-output-storage
+#           persistentVolumeClaim:
+#             claimName: input-output-pvc

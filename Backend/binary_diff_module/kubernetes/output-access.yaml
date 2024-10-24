@@ -1,17 +1,18 @@
-# output-access-pod.yaml
+# kubernetes/output-access.yaml
 apiVersion: v1
 kind: Pod
 metadata:
   name: output-access-pod
 spec:
   containers:
-    - name: shell
-      image: busybox
-      command: ["sh", "-c", "sleep 3600"]
+    - name: output-access
+      image: alpine:latest
+      command: ["sleep", "3600"]
       volumeMounts:
-        - name: output
+        - name: input-output-storage
           mountPath: /output
+          subPath: output
   volumes:
-    - name: output
+    - name: input-output-storage
       persistentVolumeClaim:
-        claimName: pvc-output
+        claimName: input-output-pvc
