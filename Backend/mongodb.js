@@ -1,8 +1,8 @@
 // mongodb.js
+//https://github.com/Kace33/ProjectHierarchy.git
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config(); // Load environment variables from .env file
 const uri = process.env.MONGO_URI;
-//const uri = `mongodb+srv://mongoDB:${MONGO_PASS}@metadata.hymc1.mongodb.net/?retryWrites=true&w=majority`;
 
 /*const client = new MongoClient(uri, {
     serverApi: {
@@ -27,9 +27,13 @@ const uri = process.env.MONGO_URI;
     try {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
+      //console.log("trying to connect here");
       // Send a ping to confirm a successful connection
+      //does admin need to be switched out for Horizon3?
       await client.db("admin").command({ ping: 1 });
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+      //the following line previously had metadata instead of horizon3
       return client.db("metadata");
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
