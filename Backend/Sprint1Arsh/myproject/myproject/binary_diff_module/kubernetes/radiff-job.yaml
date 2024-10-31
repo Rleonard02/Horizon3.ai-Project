@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: radiff-analysis-job
+spec:
+  template:
+    metadata:
+      labels:
+        app: radiff
+    spec:
+      containers:
+        - name: radiff
+          image: radare/radare2:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              radiff2 -A -C /app/input_binaries/binary1.bin /app/input_binaries/binary2.bin > /output/radiff_output.txt
+          volumeMounts:
+            - name: input-output-storage
+              mountPath: /app/input_binaries
+              subPath: input_binaries
+            - name: input-output-storage
+              mountPath: /output
+              subPath: output
+      restartPolicy: Never
+      volumes:
+        - name: input-output-storage
+          persistentVolumeClaim:
+            claimName: input-output-pvc

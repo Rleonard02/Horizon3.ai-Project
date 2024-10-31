@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ghidra-decompiler-job-binary1-bin
+spec:
+  template:
+    metadata:
+      labels:
+        app: ghidra-decompiler
+    spec:
+      containers:
+      - args:
+        - decompile
+        - /app/input_binaries/binary1.bin
+        image: cincan/ghidra-decompiler:latest
+        name: ghidra-decompiler
+        volumeMounts:
+        - mountPath: /app/input_binaries
+          name: input-output-storage
+          subPath: input_binaries
+      restartPolicy: Never
+      volumes:
+      - name: input-output-storage
+        persistentVolumeClaim:
+          claimName: input-output-pvc

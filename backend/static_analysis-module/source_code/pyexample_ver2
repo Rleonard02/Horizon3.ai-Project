@@ -1,0 +1,19 @@
+# test.py - Version 2
+
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    # Bug introduced: subtraction logic is wrong (potential issue)
+    return a + b
+
+def multiply(a, b):
+    return a * b
+
+# Unused function removed (issue resolved)
+
+def buggy_function():
+    return 1/0  # Known issue: division by zero
+
+
+
