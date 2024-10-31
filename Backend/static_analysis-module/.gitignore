@@ -1,0 +1,15 @@
+# Ignore environment variables and sensitive files
+
+
+# Ignore SonarQube reports
+sonarqube/reports/
+
+# Ignore Docker volumes
+sonarqube/conf/
+sonarqube/data/
+sonarqube/logs/
+sonarqube/extensions/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
