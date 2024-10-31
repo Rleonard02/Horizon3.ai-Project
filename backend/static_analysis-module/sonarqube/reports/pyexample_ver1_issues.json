@@ -10,7 +10,7 @@
     "effortTotal": 5,
     "issues": [
         {
-            "key": "AZLP9nHBKpMWzqGzGsfX",
+            "key": "AZLkjHfBXPPGxcZ2kTSo",
             "rule": "python:S1481",
             "severity": "MINOR",
             "component": "pyexample_ver1:pyexample_ver1.py",
@@ -32,8 +32,8 @@
             "tags": [
                 "unused"
             ],
-            "creationDate": "2024-10-27T21:51:21+0000",
-            "updateDate": "2024-10-27T21:51:21+0000",
+            "creationDate": "2024-10-31T21:47:38+0000",
+            "updateDate": "2024-10-31T21:47:38+0000",
             "type": "CODE_SMELL",
             "scope": "MAIN",
             "quickFixAvailable": false,

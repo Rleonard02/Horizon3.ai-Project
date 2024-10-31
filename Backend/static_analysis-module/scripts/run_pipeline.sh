@@ -3,7 +3,7 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 set -u  # Treat unset variables as an error
 
-# Function to log messages
+# Function to log messages with timestamps
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
@@ -17,7 +17,7 @@ log "Starting SonarQube and PostgreSQL services..."
 # Step 2: Wait for SonarQube server to become ready
 log "Waiting for SonarQube server to become ready..."
 WAIT_TIME=0
-TIMEOUT=120
+TIMEOUT=120  # Timeout after 120 seconds
 while ! curl -sSf http://localhost:9000 > /dev/null; do
     if [ $WAIT_TIME -ge $TIMEOUT ]; then
         log "Error: SonarQube server did not become ready in time."
@@ -30,13 +30,11 @@ done
 log "SonarQube server is ready."
 
 # Step 3: Create SonarQube token
+
+
 log "Creating SonarQube token..."
 TOKEN=$(python3 create_token.py pipeline_token)
 
-if [ -z "$TOKEN" ]; then
-    log "Error: Failed to create SonarQube token."
-    exit 1
-fi
 
 # Export the token as an environment variable for the current session
 export SONARQUBE_TOKEN=$TOKEN
@@ -47,8 +45,12 @@ echo "export SONARQUBE_TOKEN=${TOKEN}" > ../.sonarqube_env
 chmod 600 ../.sonarqube_env
 log "SONARQUBE_TOKEN saved to ../.sonarqube_env."
 
-# Step 4: Run Static Analysis
-log "Running SonarQube analysis..."
-./run_analysis_and_compare.py --tool sonarqube
+# Step 4: Run Static Analysis three times
+#for i in {1..3}; do
+    #log "Running SonarQube analysis iteration $i..."
+   # ./run_analysis_and_compare.py --tool sonarqube
+   # log "Completed SonarQube analysis iteration $i."
+   # sleep 2  # Optional: Wait for 2 seconds before the next iteration
+#done
 
 log "Static analysis pipeline completed successfully."

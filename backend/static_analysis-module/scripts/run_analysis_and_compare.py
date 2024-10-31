@@ -7,6 +7,7 @@ import requests
 import time
 import tempfile
 import json
+import sys
 
 # Function to source environment variables from a file
 def source_env_file(env_file_path):
