@@ -1,0 +1,27 @@
+Function: main
+Similarity: 0.338462
+
+Code in Binary 1:
+
+
+
+undefined8 main(void)
+
+{
+  puts("Hello, Universe!");
+  return 0;
+}
+
+Code in Binary 2:
+
+
+
+undefined8 main(void)
+
+{
+  printf("The sum is: %d\n",0xf);
+  return 0;
+}
+
+================================================================================
+

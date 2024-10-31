@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   nginx:
     image: nginx:latest
@@ -7,30 +7,37 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - endpoint1
-      - endpoint2
+      - webhook-creator
+      - webhook-receiver
     networks:
       - webnet
 
-  endpoint1:
+  webhook-creator:
     build: ./webhook-creator
     environment:
-      - WEBHOOK_URL=/webhook
-      - AUTH_TOKEN=
-    volumes:
-      - shared_data:/shared
+      - WEBHOOK_URL=http://webhook-receiver:5001/webhook
+      - AUTH_TOKEN=your_auth_token_here
     networks:
       - webnet
 
-  endpoint2:
+  webhook-receiver:
     build: ./webhook-receiver
+    ports:
+      - "5001:5001"
     volumes:
-      - shared_data:/shared
+      - ./binary_diff_module/shared_data:/shared
     networks:
       - webnet
+
+  binary-analysis:
+    build: ./binary_diff_module
+    volumes:
+      - ./binary_diff_module/shared_data:/shared
+      - ~/.kube/config:/root/.kube/config
+      - ./binary_diff_module/kubernetes:/app/kubernetes
+    networks:
+      - webnet
+    restart: unless-stopped
 
 networks:
   webnet:
-
-volumes:
-  shared_data:
