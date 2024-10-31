@@ -10,7 +10,7 @@
     "effortTotal": 5,
     "issues": [
         {
-            "key": "AZJObDPh5dT7FEGLVaTQ",
+            "key": "AZLkjHfBXPPGxcZ2kTSo",
             "rule": "python:S1481",
             "severity": "MINOR",
             "component": "pyexample_ver1:pyexample_ver1.py",
@@ -32,8 +32,8 @@
             "tags": [
                 "unused"
             ],
-            "creationDate": "2024-10-02T18:09:21+0000",
-            "updateDate": "2024-10-02T18:09:21+0000",
+            "creationDate": "2024-10-31T21:47:38+0000",
+            "updateDate": "2024-10-31T21:47:38+0000",
             "type": "CODE_SMELL",
             "scope": "MAIN",
             "quickFixAvailable": false,
@@ -42,19 +42,19 @@
     ],
     "components": [
         {
-            "key": "pyexample_ver1",
-            "enabled": true,
-            "qualifier": "TRK",
-            "name": "PyExample Ver1",
-            "longName": "PyExample Ver1"
-        },
-        {
             "key": "pyexample_ver1:pyexample_ver1.py",
             "enabled": true,
             "qualifier": "FIL",
             "name": "pyexample_ver1.py",
             "longName": "pyexample_ver1.py",
             "path": "pyexample_ver1.py"
+        },
+        {
+            "key": "pyexample_ver1",
+            "enabled": true,
+            "qualifier": "TRK",
+            "name": "PyExample Ver1",
+            "longName": "PyExample Ver1"
         }
     ],
     "facets": []
