@@ -12,19 +12,21 @@ const dest_url = process.env.LOCAL_DEST;
 const router = express.Router();
 
 
-router.post('/query-metadata', async (req, res) => {
+router.get('/query-metadata', async (req, res) => {
   console.log('Request received at /query-metadata');
   
 
   try {
     const db = await connectToDB(); // Connect to MongoDB
     const collection = db.collection('metadata'); // Choose a collection (e.g., 'commits')
-    const { name, path, type, sha } = req.body;
+    //const { name, path, type, sha } = req.body;
     // build the query
     const query = {};
-
+    if (req.query.author) query.author = req.query.author;
+    console.log(`author: ${req.query.author}`);
+    if (req.query.date) query.date = req.query.date;
         // Dynamically add fields to the query if present in the request
-        if (name) query.author = name;
+        //if (name) query.author = name;
         //if (req.query.name) query.author = req.query.name;
         //if (req.query.path) query.path = req.query.path;
         //if (req.query.type) query.type = req.query.type;
@@ -33,7 +35,7 @@ router.post('/query-metadata', async (req, res) => {
 
         // Perform the MongoDB query
         const results = await collection.find(query).toArray();
-
+        console.log(`results: ${results}`);
         res.status(200).json(results);
 
   

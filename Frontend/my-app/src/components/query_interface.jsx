@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 
-//const QueryForm = () => {
-function QueryForm() {
+function QueryInterface() {
     const [formData, setFormData] = useState({
-        name: '',
-        path: '',
-        type: '',
-        size: '',
-        sha: ''
+        author: '',
+        date: '',
     });
     const [results, setResults] = useState([]);
 
+    // Update form state on input change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -19,66 +16,48 @@ function QueryForm() {
         }));
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Construct query params based on form data
         const queryParams = new URLSearchParams(formData).toString();
         
-        // Send request to backend API
-        const response = await fetch(`/api/query-metadata`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ formData }),
-            //body: JSON.stringify({ queryParams }),
-
+        // Send request to backend API with the search query
+        const response = await fetch(`/api/query-metadata?${queryParams}`, {
+            method: 'GET',
         });
         const data = await response.json();
-        setResults(data);  // Store results in state
+        setResults(data); // Store results in state
     };
 
     return (
         <div>
-            <h1>Metadata Query</h1>
+            <h1>Search Documents</h1>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Name:
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} />
+                    Author:
+                    <input type="text" name="author" value={formData.author} onChange={handleChange} />
                 </label><br />
                 
                 <label>
-                    Path:
-                    <input type="text" name="path" value={formData.path} onChange={handleChange} />
+                    Date:
+                    <input type="text" name="date" value={formData.date} onChange={handleChange} />
                 </label><br />
                 
-                <label>
-                    Type:
-                    <input type="text" name="type" value={formData.type} onChange={handleChange} />
-                </label><br />
-                
-                <label>
-                    Size:
-                    <input type="number" name="size" value={formData.size} onChange={handleChange} />
-                </label><br />
-                
-                <label>
-                    SHA:
-                    <input type="text" name="sha" value={formData.sha} onChange={handleChange} />
-                </label><br />
-                
-                <button type="submit">Submit</button>
+                <button type="submit">Search</button>
             </form>
 
-            <h2>Query Results:</h2>
+            <h2>Search Results:</h2>
             <div>
                 {results.length > 0 ? (
                     results.map((item, index) => (
                         <div key={index}>
-                            <p><strong>Name:</strong> {item.name}</p>
-                            <p><strong>Path:</strong> {item.path}</p>
-                            <p><strong>Type:</strong> {item.type}</p>
-                            <p><strong>Size:</strong> {item.size}</p>
-                            <p><strong>SHA:</strong> {item.sha}</p>
+                            <p><strong>Author:</strong> {item.author}</p>
+                            <p><strong>Date:</strong> {item.date}</p>
+                            <p><strong>Hash:</strong> {item.hash}</p>
+                            <p><strong>Message:</strong> {item.message}</p>
+                            <p><strong>Tree:</strong> {item.tree}</p>
                             <hr />
                         </div>
                     ))
@@ -88,6 +67,6 @@ function QueryForm() {
             </div>
         </div>
     );
-};
+}
 
-export default QueryForm;
+export default QueryInterface;
