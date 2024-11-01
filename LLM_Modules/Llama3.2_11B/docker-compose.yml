@@ -1,0 +1,12 @@
+services:
+  llm:
+    build:
+      context: .
+    image: llama32_11b-llm
+    container_name: llm
+    volumes:
+      - ./input_code.txt:/app/input_code.txt
+      - ./analysis_output.md:/app/analysis_output.md
+    environment:
+      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN}
+    command: [ "python", "test_llm_module.py", "input_code.txt" ]

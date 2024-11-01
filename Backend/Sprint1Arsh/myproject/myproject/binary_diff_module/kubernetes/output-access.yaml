@@ -1,0 +1,18 @@
+# kubernetes/output-access.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: output-access-pod
+spec:
+  containers:
+    - name: output-access
+      image: alpine:latest
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: input-output-storage
+          mountPath: /output
+          subPath: output
+  volumes:
+    - name: input-output-storage
+      persistentVolumeClaim:
+        claimName: input-output-pvc
