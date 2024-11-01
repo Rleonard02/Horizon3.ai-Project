@@ -7,7 +7,7 @@ SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/Base/lib/slf4j-nop-1.7
 SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/GraphServices/lib/slf4j-nop-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
 SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
 SLF4J: Actual binding is of type [org.slf4j.helpers.NOPLoggerFactory]
-INFO  Class search complete (2736 ms) (ClassSearcher)  
+INFO  Class search complete (1721 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (SSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
@@ -41,7 +41,7 @@ INFO  Creating project: /ghidra/ghidra_projects/ANewProject (DefaultProject)
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
 INFO       project: /ghidra/ghidra_projects/ANewProject (HeadlessAnalyzer)  
 INFO  IMPORTING: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
-INFO  TLS callbacks at 14000f038 (TLSDirectory$$EnhancerByCGLIB$$9b7585c2)  
+INFO  TLS callbacks at 14000f038 (TLSDirectory$$EnhancerByCGLIB$$3c83488c)  
 INFO  REPORT: Import succeeded with language "x86:LE:64:default" and cspec "windows" for file: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
 INFO  ANALYZING all memory and code: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
 DEBUG SymbolServerService: querying Program's Import Location - /app/input_binaries for <unknown>, 00000000, 0, 0, ??? (SymbolServerService)  
@@ -56,43 +56,43 @@ Or set the symbol server search configuration using:    PdbPlugin.saveSymbolServ
 INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Packed database cache: /tmp/appuser-Ghidra/packed-db-cache (PackedDatabaseCache)  
 DEBUG Caching packed database: /ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_64.gdt (PackedDatabaseCache)  
-DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdb1EE9D425/db.1.gbf (PackedDatabase)  
+DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdb930BA779/db.1.gbf (PackedDatabase)  
 DEBUG Cache update completed: /ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_64.gdt (PackedDatabaseCache)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              1.635 secs
-    Apply Data Archives                        2.926 secs
-    Call Convention ID                         0.004 secs
+    ASCII Strings                              1.454 secs
+    Apply Data Archives                        3.631 secs
+    Call Convention ID                         0.006 secs
     Call-Fixup Installer                       0.012 secs
-    Create Address Tables                      0.055 secs
-    Create Address Tables - One Time           0.191 secs
-    Create Function                            0.292 secs
-    Data Reference                             0.248 secs
-    Decompiler Parameter ID                    3.933 secs
-    Decompiler Switch Analysis                 1.685 secs
-    Decompiler Switch Analysis - One Time      2.232 secs
-    Demangler Microsoft                        0.040 secs
-    Disassemble                                0.003 secs
-    Disassemble Entry Points                   1.486 secs
-    Disassemble Entry Points - One Time        0.194 secs
-    Embedded Media                             0.041 secs
+    Create Address Tables                      0.056 secs
+    Create Address Tables - One Time           0.231 secs
+    Create Function                            0.275 secs
+    Data Reference                             0.266 secs
+    Decompiler Parameter ID                    4.998 secs
+    Decompiler Switch Analysis                 2.229 secs
+    Decompiler Switch Analysis - One Time      2.149 secs
+    Demangler Microsoft                        0.062 secs
+    Disassemble                                0.004 secs
+    Disassemble Entry Points                   1.528 secs
+    Disassemble Entry Points - One Time        0.145 secs
+    Embedded Media                             0.047 secs
     External Entry References                  0.000 secs
-    Function ID                                0.242 secs
-    Function Start Search                      0.006 secs
-    Non-Returning Functions - Discovered       0.070 secs
-    Non-Returning Functions - Known            0.073 secs
-    PDB Universal                              0.031 secs
-    Reference                                  0.293 secs
-    Scalar Operand References                  0.266 secs
-    Shared Return Calls                        0.070 secs
-    Stack                                      1.796 secs
-    Subroutine References                      0.121 secs
-    Subroutine References - One Time           0.005 secs
-    Windows x86 PE Exception Handling          0.040 secs
-    Windows x86 PE RTTI Analyzer               0.007 secs
-    WindowsResourceReference                   8.647 secs
-    x86 Constant Reference Analyzer            3.550 secs
+    Function ID                                0.939 secs
+    Function Start Search                      0.018 secs
+    Non-Returning Functions - Discovered       0.076 secs
+    Non-Returning Functions - Known            0.065 secs
+    PDB Universal                              0.034 secs
+    Reference                                  0.254 secs
+    Scalar Operand References                  0.235 secs
+    Shared Return Calls                        0.089 secs
+    Stack                                      1.404 secs
+    Subroutine References                      0.125 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          0.028 secs
+    Windows x86 PE RTTI Analyzer               0.018 secs
+    WindowsResourceReference                  13.542 secs
+    x86 Constant Reference Analyzer            4.399 secs
 -----------------------------------------------------
-     Total Time   30 secs
+     Total Time   38 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Analysis succeeded for file: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
