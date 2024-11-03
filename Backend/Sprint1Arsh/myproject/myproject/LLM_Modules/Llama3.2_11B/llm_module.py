@@ -3,8 +3,8 @@
 import os
 import requests
 
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
-
+HUGGINGFACE_API_TOKEN = "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"
+print(HUGGINGFACE_API_TOKEN)
 # CHANGE TO USE DIFFERENT MODELS FROM HUGGINGFACE INFERENCE API
 API_URL = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-11B-Vision-Instruct" 
 

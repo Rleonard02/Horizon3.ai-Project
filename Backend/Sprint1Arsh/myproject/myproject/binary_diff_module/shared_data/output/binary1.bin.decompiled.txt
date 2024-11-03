@@ -7,7 +7,7 @@ SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/Base/lib/slf4j-nop-1.7
 SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/GraphServices/lib/slf4j-nop-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
 SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
 SLF4J: Actual binding is of type [org.slf4j.helpers.NOPLoggerFactory]
-INFO  Class search complete (2046 ms) (ClassSearcher)  
+INFO  Class search complete (5671 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (SSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
@@ -41,10 +41,10 @@ INFO  Creating project: /ghidra/ghidra_projects/ANewProject (DefaultProject)
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
 INFO       project: /ghidra/ghidra_projects/ANewProject (HeadlessAnalyzer)  
 INFO  IMPORTING: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
-DEBUG Elf symbol table section .dynsym linked to string table section .dynstr (ElfHeader$$EnhancerByCGLIB$$31c93e2a)  
-DEBUG Elf symbol table section .symtab linked to string table section .strtab (ElfHeader$$EnhancerByCGLIB$$31c93e2a)  
-DEBUG Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD (ElfHeader$$EnhancerByCGLIB$$31c93e2a)  
-DEBUG Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt (ElfHeader$$EnhancerByCGLIB$$31c93e2a)  
+DEBUG Elf symbol table section .dynsym linked to string table section .dynstr (ElfHeader$$EnhancerByCGLIB$$872a92f8)  
+DEBUG Elf symbol table section .symtab linked to string table section .strtab (ElfHeader$$EnhancerByCGLIB$$872a92f8)  
+DEBUG Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD (ElfHeader$$EnhancerByCGLIB$$872a92f8)  
+DEBUG Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt (ElfHeader$$EnhancerByCGLIB$$872a92f8)  
 DEBUG Loading block .data at 00104008 from file offset 12296 (ElfProgramBuilder)  
 DEBUG Loading block .got.plt at 00103fe8 from file offset 12264 (ElfProgramBuilder)  
 DEBUG Loading block .got at 00103fc0 from file offset 12224 (ElfProgramBuilder)  
@@ -54,7 +54,7 @@ DEBUG Loading block .init_array at 00103dd0 from file offset 11728 (ElfProgramBu
 DEBUG Loading block .eh_frame at 00102048 from file offset 8264 (ElfProgramBuilder)  
 DEBUG Loading block .eh_frame_hdr at 00102018 from file offset 8216 (ElfProgramBuilder)  
 DEBUG Loading block .rodata at 00102000 from file offset 8192 (ElfProgramBuilder)  
-DEBUG Loading block .fini at 00101160 from file offset 4448 (ElfProgramBuilder)  
+DEBUG Loading block .fini at 0010117c from file offset 4476 (ElfProgramBuilder)  
 DEBUG Loading block .text at 00101050 from file offset 4176 (ElfProgramBuilder)  
 DEBUG Loading block .plt.got at 00101040 from file offset 4160 (ElfProgramBuilder)  
 DEBUG Loading block .plt at 00101020 from file offset 4128 (ElfProgramBuilder)  
@@ -62,7 +62,7 @@ DEBUG Loading block .init at 00101000 from file offset 4096 (ElfProgramBuilder)
 DEBUG Loading block .rela.plt at 00100600 from file offset 1536 (ElfProgramBuilder)  
 DEBUG Loading block .rela.dyn at 00100540 from file offset 1344 (ElfProgramBuilder)  
 DEBUG Loading block .gnu.version_r at 00100510 from file offset 1296 (ElfProgramBuilder)  
-DEBUG Loading block .gnu.version at 001004fe from file offset 1278 (ElfProgramBuilder)  
+DEBUG Loading block .gnu.version at 00100500 from file offset 1280 (ElfProgramBuilder)  
 DEBUG Loading block .dynstr at 00100470 from file offset 1136 (ElfProgramBuilder)  
 DEBUG Loading block .dynsym at 001003c8 from file offset 968 (ElfProgramBuilder)  
 DEBUG Loading block .gnu.hash at 001003a0 from file offset 928 (ElfProgramBuilder)  
@@ -74,60 +74,60 @@ DEBUG Discarding 3-byte alignment/filler segment_4.2 at 00102015 (ElfProgramBuil
 DEBUG Discarding 4-byte alignment/filler segment_4.4 at 00102044 (ElfProgramBuilder)  
 DEBUG Discarding 9-byte alignment/filler segment_3.2 at 00101017 (ElfProgramBuilder)  
 DEBUG Discarding 8-byte alignment/filler segment_3.5 at 00101048 (ElfProgramBuilder)  
-DEBUG Discarding 2-byte alignment/filler segment_3.7 at 0010115e (ElfProgramBuilder)  
+DEBUG Discarding 2-byte alignment/filler segment_3.7 at 0010117a (ElfProgramBuilder)  
 DEBUG Loading block segment_2.1 at 00100000 from file offset 0 (ElfProgramBuilder)  
 DEBUG Discarding 4-byte alignment/filler segment_2.3 at 00100334 (ElfProgramBuilder)  
 DEBUG Discarding 4-byte alignment/filler segment_2.7 at 0010039c (ElfProgramBuilder)  
 DEBUG Discarding 4-byte alignment/filler segment_2.9 at 001003c4 (ElfProgramBuilder)  
-DEBUG Discarding 1-byte alignment/filler segment_2.12 at 001004fd (ElfProgramBuilder)  
-DEBUG Discarding 4-byte alignment/filler segment_2.14 at 0010050c (ElfProgramBuilder)  
-DEBUG Loading block .shstrtab at OTHER:00000000 from file offset 14274 (ElfProgramBuilder)  
-DEBUG Loading block .strtab at OTHER:00000000 from file offset 13800 (ElfProgramBuilder)  
-DEBUG Loading block .symtab at OTHER:00000000 from file offset 12936 (ElfProgramBuilder)  
-DEBUG Loading block .debug_line_str at OTHER:00000000 from file offset 12869 (ElfProgramBuilder)  
-DEBUG Loading block .debug_str at OTHER:00000000 from file offset 12718 (ElfProgramBuilder)  
-DEBUG Loading block .debug_line at OTHER:00000000 from file offset 12629 (ElfProgramBuilder)  
-DEBUG Loading block .debug_abbrev at OTHER:00000000 from file offset 12545 (ElfProgramBuilder)  
+DEBUG Discarding 1-byte alignment/filler segment_2.12 at 001004ff (ElfProgramBuilder)  
+DEBUG Discarding 2-byte alignment/filler segment_2.14 at 0010050e (ElfProgramBuilder)  
+DEBUG Loading block .shstrtab at OTHER:00000000 from file offset 14428 (ElfProgramBuilder)  
+DEBUG Loading block .strtab at OTHER:00000000 from file offset 13952 (ElfProgramBuilder)  
+DEBUG Loading block .symtab at OTHER:00000000 from file offset 13088 (ElfProgramBuilder)  
+DEBUG Loading block .debug_line_str at OTHER:00000000 from file offset 12998 (ElfProgramBuilder)  
+DEBUG Loading block .debug_str at OTHER:00000000 from file offset 12840 (ElfProgramBuilder)  
+DEBUG Loading block .debug_line at OTHER:00000000 from file offset 12739 (ElfProgramBuilder)  
+DEBUG Loading block .debug_abbrev at OTHER:00000000 from file offset 12602 (ElfProgramBuilder)  
 DEBUG Loading block .debug_info at OTHER:00000000 from file offset 12391 (ElfProgramBuilder)  
 DEBUG Loading block .debug_aranges at OTHER:00000000 from file offset 12343 (ElfProgramBuilder)  
 DEBUG Loading block .comment at OTHER:00000000 from file offset 12312 (ElfProgramBuilder)  
-DEBUG Loading block _elfSectionHeaders at OTHER:00000000 from file offset 14640 (ElfProgramBuilder)  
+DEBUG Loading block _elfSectionHeaders at OTHER:00000000 from file offset 14792 (ElfProgramBuilder)  
 INFO  REPORT: Import succeeded with language "x86:LE:64:default" and cspec "gcc" for file: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
 INFO  ANALYZING all memory and code: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
 INFO  Packed database cache: /tmp/appuser-Ghidra/packed-db-cache (PackedDatabaseCache)  
 DEBUG Caching packed database: /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt (PackedDatabaseCache)  
-DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdb5DB94342/db.1.gbf (PackedDatabase)  
+DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdb6FE84977/db.1.gbf (PackedDatabase)  
 DEBUG Cache update completed: /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt (PackedDatabaseCache)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.993 secs
-    Apply Data Archives                        0.959 secs
-    Call Convention ID                         0.197 secs
-    Call-Fixup Installer                       0.003 secs
-    Create Address Tables                      0.018 secs
-    Create Function                            0.004 secs
-    DWARF                                      0.013 secs
+    ASCII Strings                              1.979 secs
+    Apply Data Archives                        2.340 secs
+    Call Convention ID                         0.318 secs
+    Call-Fixup Installer                       0.062 secs
+    Create Address Tables                      0.035 secs
+    Create Function                            0.006 secs
+    DWARF                                      0.063 secs
     Data Reference                             0.020 secs
-    Decompiler Switch Analysis                 0.572 secs
-    Demangler GNU                              0.019 secs
-    Disassemble Entry Points                   0.190 secs
-    ELF Scalar Operand References              0.007 secs
-    Embedded Media                             0.010 secs
-    External Entry References                  0.000 secs
-    Function ID                                0.037 secs
-    Function Start Search                      0.056 secs
-    Function Start Search After Code           0.003 secs
-    Function Start Search After Data           0.003 secs
-    GCC Exception Handlers                     0.081 secs
-    Non-Returning Functions - Discovered       0.003 secs
-    Non-Returning Functions - Known            0.005 secs
-    Reference                                  0.039 secs
-    Shared Return Calls                        0.010 secs
-    Stack                                      0.057 secs
-    Subroutine References                      0.008 secs
-    Subroutine References - One Time           0.000 secs
-    x86 Constant Reference Analyzer            0.123 secs
+    Decompiler Switch Analysis                 0.883 secs
+    Demangler GNU                              0.027 secs
+    Disassemble Entry Points                   0.237 secs
+    ELF Scalar Operand References              0.017 secs
+    Embedded Media                             0.007 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.092 secs
+    Function Start Search                      0.090 secs
+    Function Start Search After Code           0.007 secs
+    Function Start Search After Data           0.006 secs
+    GCC Exception Handlers                     0.141 secs
+    Non-Returning Functions - Discovered       0.006 secs
+    Non-Returning Functions - Known            0.004 secs
+    Reference                                  0.048 secs
+    Shared Return Calls                        0.009 secs
+    Stack                                      0.103 secs
+    Subroutine References                      0.011 secs
+    Subroutine References - One Time           0.001 secs
+    x86 Constant Reference Analyzer            0.168 secs
 -----------------------------------------------------
-     Total Time   3 secs
+     Total Time   6 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Analysis succeeded for file: /app/input_binaries/binary1.bin (HeadlessAnalyzer)  
@@ -405,12 +405,12 @@ void FUN_00101020(void)
 
 // WARNING: Unknown calling convention yet parameter storage is locked
 
-int puts(char *__s)
+int printf(char *__format,...)
 
 {
   int iVar1;
   
-  iVar1 = puts(__s);
+  iVar1 = printf(__format);
   return iVar1;
 }
 
@@ -487,7 +487,7 @@ void frame_dummy(void)
 undefined8 main(void)
 
 {
-  puts("Hello, Universe!");
+  printf("The sum is?: %d\n",0x145);
   return 0;
 }
 

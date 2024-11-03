@@ -33,10 +33,24 @@ services:
     build: ./binary_diff_module
     volumes:
       - ./binary_diff_module/shared_data:/shared
-      - ~/.kube/config:/root/.kube/config
+      - ~/.kube/config:/root/.kube/config:ro
       - ./binary_diff_module/kubernetes:/app/kubernetes
     networks:
       - webnet
+    depends_on:
+      - webhook-receiver
+    restart: unless-stopped
+
+  llm-module:
+    build: ./LLM_Modules/Llama3.2_11B
+    volumes:
+      - ./binary_diff_module/shared_data:/shared
+    environment:
+      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN}
+    networks:
+      - webnet
+    depends_on:
+      - binary-analysis
     restart: unless-stopped
 
 networks:
