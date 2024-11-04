@@ -7,15 +7,28 @@ import yaml
 import glob
 import shutil
 from pathlib import Path
-
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+import logging
+import requests  # Imported requests module for HTTP requests
 
 # Configure logging
-import logging
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
+
+API_SERVICE_URL = "http://api-service:8000/update_status"
+
+def update_status(status, progress, message):
+    data = {
+        "service": "binary-analysis",
+        "status": status,
+        "progress": progress,
+        "message": message
+    }
+    try:
+        requests.post(API_SERVICE_URL, json=data)
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to update status: {e}")
 
 def extract_function_differences(radiff_output_file):
     differences = []
@@ -54,10 +67,12 @@ def compile_and_analyze():
     Path(binary_dir).mkdir(parents=True, exist_ok=True)
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
+    update_status("running", 10, "Compiling source code")
     # Compile source code
     compile_file(c_source1, os.path.join(binary_dir, "binary1.bin"))
     compile_file(c_source2, os.path.join(binary_dir, "binary2.bin"))
 
+    update_status("running", 20, "Copying binaries to PVC")
     # Copy binaries into the PVC using a temporary Pod
     create_pod_to_access_output('/app/kubernetes/pvc-access-pod.yaml')
     wait_for_pod_ready('pvc-access-pod')
@@ -76,13 +91,13 @@ def compile_and_analyze():
     # Delete the temporary Pod
     delete_pod('pvc-access-pod')
 
-    # Process each binary file
     decompiled_files = []
-    for binary in glob.glob(os.path.join(binary_dir, '*.bin')):
+    for idx, binary in enumerate(glob.glob(os.path.join(binary_dir, '*.bin')), start=1):
         binary_name = os.path.basename(binary)
         job_name = f'ghidra-decompiler-job-{binary_name.replace(".", "-")}'
         job_yaml = f'kubernetes/ghidra-job-{binary_name.replace(".", "-")}.yaml'
 
+        update_status("running", 20 + idx * 10, f"Submitting Ghidra job for {binary_name}")
         # Create a job manifest for each binary
         create_ghidra_job_yaml(binary_name, job_name, job_yaml)
 
@@ -104,6 +119,7 @@ def compile_and_analyze():
         # Delete the Job
         delete_job(job_name)
 
+    update_status("running", 60, "Copying decompiled files to PVC")
     # Copy decompiled files into the PVC for radiff job
     create_pod_to_access_output('/app/kubernetes/pvc-access-pod.yaml')
     wait_for_pod_ready('pvc-access-pod')
@@ -122,10 +138,12 @@ def compile_and_analyze():
     # Delete the temporary Pod
     delete_pod('pvc-access-pod')
 
+    update_status("running", 70, "Submitting Radiff analysis job")
     # Submit Radiff Job
     submit_kubernetes_job('kubernetes/radiff-job.yaml')
     if not wait_for_job_completion('radiff-analysis-job'):
         logger.error("Radiff analysis job failed or timed out.")
+        update_status("failed", 0, "Radiff analysis job failed")
         return
 
     # Create a Pod to access output data
@@ -144,6 +162,7 @@ def compile_and_analyze():
     # Delete the Radiff Job
     delete_job('radiff-analysis-job')
 
+    update_status("running", 80, "Generating diff report")
     # Generate the diff report
     generate_diff_report(
         radiff_output_file="/shared/output/radiff_output.txt",
@@ -153,6 +172,7 @@ def compile_and_analyze():
     )
 
     logger.info("Diff report generated at /shared/output/diff_report.txt")
+    update_status("completed", 100, "Binary analysis completed")
 
 def compile_file(source_path, output_binary):
     try:
@@ -160,18 +180,20 @@ def compile_file(source_path, output_binary):
         logger.info(f"Compiled {source_path} to {output_binary}")
     except subprocess.CalledProcessError as e:
         logger.error(f"Error compiling {source_path}: {e}")
+        update_status("failed", 0, f"Error compiling {source_path}")
+        sys.exit(1)
 
 def generate_diff_report(radiff_output_file, decompiled_file1, decompiled_file2, report_file):
     try:
         # Extract function differences from radiff output
         differences = extract_function_differences(radiff_output_file)
-        
+
         # Load decompiled files
         with open(decompiled_file1, 'r') as f:
             decompiled_code1 = f.read()
         with open(decompiled_file2, 'r') as f:
             decompiled_code2 = f.read()
-        
+
         # Generate report
         with open(report_file, 'w') as f:
             for diff in differences:
@@ -190,8 +212,10 @@ def generate_diff_report(radiff_output_file, decompiled_file1, decompiled_file2,
         logger.info(f"Diff report generated at {report_file}")
     except FileNotFoundError as e:
         logger.error(f"File not found during diff report generation: {e}")
+        update_status("failed", 0, "File not found during diff report generation")
     except Exception as e:
         logger.error(f"Error generating diff report: {e}")
+        update_status("failed", 0, "Error generating diff report")
 
 def extract_function_code(decompiled_code, function_name):
     # Remove 'dbg.' or 'sym.' prefixes if present
@@ -220,6 +244,7 @@ def submit_kubernetes_job(job_manifest_path):
             logger.warning(f"Job {job_name} already exists.")
         else:
             logger.error(f"Error submitting job {job_name}: {e}")
+            update_status("failed", 0, f"Error submitting job {job_name}")
             sys.exit(1)
 
 def wait_for_job_completion(job_name, timeout=600):
@@ -321,13 +346,14 @@ def get_job_logs(job_name, output_file):
     label_selector = f'job-name={job_name}'
     pods = core_v1.list_namespaced_pod(namespace='default', label_selector=label_selector)
     if not pods.items:
-        print(f"No pods found for job {job_name}")
-        sys.exit(1)
+        logger.error(f"No pods found for job {job_name}")
+        return False
     pod_name = pods.items[0].metadata.name
     logs = core_v1.read_namespaced_pod_log(name=pod_name, namespace='default')
     with open(output_file, 'w') as f:
         f.write(logs)
-    print(f"Saved decompiled output from job {job_name} to {output_file}")
+    logger.info(f"Saved decompiled output from job {job_name} to {output_file}")
+    return True
 
 def create_ghidra_job_yaml(binary_name, job_name, job_yaml_path):
     ghidra_job_manifest = {
@@ -388,9 +414,11 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
 
     logger.info("Monitoring for incoming files...")
+    update_status("idle", 0, "Waiting for source files")
     while True:
         if source_dir.exists() and any(source_dir.glob("*.c")):
             logger.info("Detected new source files, starting compilation and analysis...")
+            update_status("running", 0, "Starting compilation and analysis")
             compile_and_analyze()
             # Remove processed C files to prevent reprocessing
             for file in source_dir.glob("*.c"):
@@ -407,4 +435,5 @@ if __name__ == "__main__":
                 except Exception as e:
                     logger.error(f"Error deleting file {file}: {e}")
             logger.info("Processing completed, continuing to monitor for new files...")
+            update_status("idle", 0, "Waiting for source files")
         time.sleep(5)

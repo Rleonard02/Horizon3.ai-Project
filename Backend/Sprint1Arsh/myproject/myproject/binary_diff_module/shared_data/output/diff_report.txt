@@ -8,7 +8,7 @@ Code in Binary 1:
 undefined8 main(void)
 
 {
-  printf("The sum is?: %d\n",0x145);
+  printf("The sum is?: %d\n",0x149);
   return 0;
 }
 
@@ -19,7 +19,7 @@ Code in Binary 2:
 undefined8 main(void)
 
 {
-  printf("The sum is?: %d\n",0x146);
+  printf("The sum is?: %d\n",0x14c);
   return 0;
 }
 

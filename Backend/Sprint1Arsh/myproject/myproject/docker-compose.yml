@@ -46,11 +46,31 @@ services:
     volumes:
       - ./binary_diff_module/shared_data:/shared
     environment:
-      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN}
+      - HUGGINGFACE_API_TOKEN=${HUGGINGFACE_API_TOKEN}
     networks:
       - webnet
     depends_on:
       - binary-analysis
+    restart: unless-stopped
+
+  api-service:
+    build: ./api_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./binary_diff_module/shared_data/output:/shared/output
+    networks:
+      - webnet
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    networks:
+      - webnet
+    depends_on:
+      - api-service
     restart: unless-stopped
 
 networks:

@@ -3,11 +3,26 @@ import os
 import re
 import sys
 import time
+import requests  # Imported requests module for HTTP requests
 
 shared_dir = "/shared"
 source_code_dir_v1 = os.path.join(shared_dir, "c_source", "version1")
 source_code_dir_v2 = os.path.join(shared_dir, "c_source", "version2")
 output_dir = os.path.join(shared_dir, "output")
+
+API_SERVICE_URL = "http://api-service:8000/update_status"
+
+def update_status(status, progress, message):
+    data = {
+        "service": "llm-module",
+        "status": status,
+        "progress": progress,
+        "message": message
+    }
+    try:
+        requests.post(API_SERVICE_URL, json=data)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to update status: {e}")
 
 def read_code_files():
     code_snippets = []
@@ -33,13 +48,16 @@ def read_analysis_outputs():
 
 def main():
     print("LLM Module started, waiting for analysis outputs...")
+    update_status("idle", 0, "Waiting for analysis outputs")
     while True:
         if os.path.exists(os.path.join(output_dir, "diff_report.txt")):
             print("Detected analysis outputs, starting LLM processing...")
+            update_status("running", 10, "Starting LLM processing")
             code_snippets = read_code_files()
             analysis_outputs = read_analysis_outputs()
             combined_input = "\n".join(code_snippets + analysis_outputs)
 
+            update_status("running", 50, "Analyzing code with LLM")
             analysis_result = analyze_code(combined_input)
 
             if analysis_result:
@@ -54,14 +72,18 @@ def main():
                         f.write(markdown_report)
                     print(f"LLM analysis complete. Confidence Score: {confidence_score}%")
                     print(f"Markdown report saved to '{output_filename}'")
+                    update_status("completed", 100, f"LLM analysis complete. Confidence Score: {confidence_score}%")
                 else:
                     print("Could not extract confidence score. Here is the full output:")
                     print(analysis_result)
+                    update_status("failed", 0, "Could not extract confidence score")
             else:
                 print("Failed to get analysis from the LLM.")
-            
+                update_status("failed", 0, "Failed to get analysis from the LLM")
+
             # Clean up or wait for next inputs
             time.sleep(5)
+            update_status("idle", 0, "Waiting for analysis outputs")
         else:
             # Wait for the analysis outputs to be generated
             time.sleep(5)
