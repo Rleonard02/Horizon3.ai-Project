@@ -1,0 +1,32 @@
+# myproject/codeql_analysis_module/kubernetes/codeql-job-template.yaml
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: codeql-analysis-repo_name-commit_sha
+spec:
+  template:
+    metadata:
+      name: codeql-analysis-repo_name-commit_sha
+      labels:
+        app: codeql-analysis
+    spec:
+      containers:
+        - name: codeql-container
+          image: codeql_analysis_module:latest # Ensure this matches your Docker image name
+          command: ["python3", "codeql-analysis.py"]
+          env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-secrets
+                  key: token
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared/codeql_analysis
+      restartPolicy: Never
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: codeql-input-output-pvc
+  backoffLimit: 4

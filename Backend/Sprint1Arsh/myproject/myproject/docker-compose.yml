@@ -1,4 +1,5 @@
-version: "3.8"
+# myproject/docker-compose.yml
+
 services:
   nginx:
     image: nginx:latest
@@ -15,7 +16,7 @@ services:
   webhook-creator:
     build: ./webhook-creator
     environment:
-      - WEBHOOK_URL=http://webhook-receiver:5001/webhook
+      - WEBHOOK_URL=https://fe60-128-210-106-62.ngrok-free.app/webhook
       - AUTH_TOKEN=your_auth_token_here
     networks:
       - webnet
@@ -25,16 +26,29 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - ./binary_diff_module/shared_data:/shared
+      - ./binary_diff_module/shared_data:/shared/binary_diff
+      - ./codeql_analysis_module/shared_data:/shared/codeql_analysis
+    environment:
+      - AUTH_TOKEN=your_auth_token_here
     networks:
       - webnet
 
   binary-analysis:
     build: ./binary_diff_module
     volumes:
-      - ./binary_diff_module/shared_data:/shared
+      - ./binary_diff_module/shared_data:/shared/binary_diff
       - ~/.kube/config:/root/.kube/config
       - ./binary_diff_module/kubernetes:/app/kubernetes
+    networks:
+      - webnet
+    restart: unless-stopped
+
+  codeql-analysis:
+    build: ./codeql_analysis_module
+    volumes:
+      - ./codeql_analysis_module/shared_data:/shared/codeql_analysis
+      - ~/.kube/config:/root/.kube/config
+      - ./codeql_analysis_module/kubernetes:/app/kubernetes
     networks:
       - webnet
     restart: unless-stopped

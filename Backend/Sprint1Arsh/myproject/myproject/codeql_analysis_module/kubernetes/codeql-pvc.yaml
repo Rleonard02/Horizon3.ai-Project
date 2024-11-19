@@ -1,0 +1,12 @@
+# myproject/codeql_analysis_module/kubernetes/codeql-pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: codeql-input-output-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

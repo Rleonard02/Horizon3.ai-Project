@@ -1,3 +1,5 @@
+# myproject/webhook-creator/app.py
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import requests
@@ -5,8 +7,6 @@ import os
 import secrets
 
 app = FastAPI()
-
-# No need to check IP here since Nginx will handle it
 
 # Retrieve AUTH_TOKEN from environment variables
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
@@ -39,8 +39,10 @@ async def create_webhook(request: Request):
     # Generate a secret for the webhook
     webhook_secret = secrets.token_hex(20)
 
-    # Store the secret in a shared volume
-    with open('/shared/secret.txt', 'w') as f:
+    # Store the secret in the shared CodeQL analysis directory
+    secret_path = '/shared/codeql_analysis/secret.txt'
+    os.makedirs(os.path.dirname(secret_path), exist_ok=True)
+    with open(secret_path, 'w') as f:
         f.write(webhook_secret)
 
     # Get the webhook URL from environment variable
