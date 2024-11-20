@@ -1,5 +1,4 @@
-# myproject/docker-compose.yml
-
+version: "3.8"
 services:
   nginx:
     image: nginx:latest
@@ -26,31 +25,52 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - ./binary_diff_module/shared_data:/shared/binary_diff
-      - ./codeql_analysis_module/shared_data:/shared/codeql_analysis
-    environment:
-      - AUTH_TOKEN=your_auth_token_here
+      - ./binary_diff_module/shared_data:/shared
     networks:
       - webnet
 
   binary-analysis:
     build: ./binary_diff_module
     volumes:
-      - ./binary_diff_module/shared_data:/shared/binary_diff
-      - ~/.kube/config:/root/.kube/config
+      - ./binary_diff_module/shared_data:/shared
+      - ~/.kube/config:/root/.kube/config:ro
       - ./binary_diff_module/kubernetes:/app/kubernetes
+    networks:
+      - webnet
+    depends_on:
+      - webhook-receiver
+    restart: unless-stopped
+
+  llm-module:
+    build: ./LLM_Modules/Llama3.2_11B
+    volumes:
+      - ./binary_diff_module/shared_data:/shared
+    environment:
+      - HUGGINGFACE_API_TOKEN=${HUGGINGFACE_API_TOKEN}
+    networks:
+      - webnet
+    depends_on:
+      - binary-analysis
+    restart: unless-stopped
+
+  api-service:
+    build: ./api_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./binary_diff_module/shared_data/output:/shared/output
     networks:
       - webnet
     restart: unless-stopped
 
-  codeql-analysis:
-    build: ./codeql_analysis_module
-    volumes:
-      - ./codeql_analysis_module/shared_data:/shared/codeql_analysis
-      - ~/.kube/config:/root/.kube/config
-      - ./codeql_analysis_module/kubernetes:/app/kubernetes
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
     networks:
       - webnet
+    depends_on:
+      - api-service
     restart: unless-stopped
 
 networks:
