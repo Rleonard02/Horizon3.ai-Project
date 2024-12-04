@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 
-function QueryInterface() {
+function QueryLLM() {
     const [formData, setFormData] = useState({
-        author: '',
-        date: '',
+        Vulnerability: '',
     });
     const [results, setResults] = useState([]);
 
@@ -24,7 +23,7 @@ function QueryInterface() {
         const queryParams = new URLSearchParams(formData).toString();
         
         // Send request to backend API with the search query
-        const response = await fetch(`/api/query-metadata?${queryParams}`, {
+        const response = await fetch(`/api/query-LLM?${queryParams}`, {
             method: 'GET',
         });
         const data = await response.json();
@@ -33,20 +32,11 @@ function QueryInterface() {
 
     return (
         <div>
-            <h1>Search Documents</h1>
+            <h1>Search LLM Reports</h1>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Author:
-                    <input type="text" name="author" value={formData.author} onChange={handleChange} />
-                </label><br />
-                
-                <label>
-                    Date:
-                    <input type="text" name="date" value={formData.date} onChange={handleChange} />
-                </label><br />
-                <label>
-                    Hash:
-                    <input type="text" name="hash" value={formData.hash} onChange={handleChange} />
+                    Vulnerability:
+                    <input type="text" name="Vulnerability" value={formData.Vulnerability} onChange={handleChange} />
                 </label><br />
                 
                 <button type="submit">Search</button>
@@ -57,11 +47,9 @@ function QueryInterface() {
                 {results.length > 0 ? (
                     results.map((item, index) => (
                         <div key={index}>
-                            <p><strong>Author:</strong> {item.author}</p>
-                            <p><strong>Date:</strong> {item.date}</p>
-                            <p><strong>Hash:</strong> {item.hash}</p>
-                            <p><strong>Message:</strong> {item.message}</p>
-                            <p><strong>Tree:</strong> {item.tree}</p>
+                            {Object.entries(item).map(([key, value]) => (
+                                <p key={key}><strong>{key}:</strong> {value}</p>
+                            ))}
                             <hr />
                         </div>
                     ))
@@ -73,4 +61,4 @@ function QueryInterface() {
     );
 }
 
-export default QueryInterface;
+export default QueryLLM;

@@ -2,6 +2,7 @@ const express = require('express');
 const apiRouter = require('./api');
 const { driver } = require('./neo4jHandler'); 
 const { client } = require('./mongodb.js');
+const { client2 } = require('./mongoLLM.js')
 const app = express();
 const port = 4000;
 
@@ -23,5 +24,6 @@ process.on('SIGINT', async () => {
   // Perform any cleanup if necessary
   await client.close();
   await driver.close();
+  await client2.close();
   process.exit();
 });

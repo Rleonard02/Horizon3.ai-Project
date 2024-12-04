@@ -2,6 +2,8 @@
 
 import os
 import requests
+from pymongo import MongoClient
+import logging
 
 HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
 
@@ -44,7 +46,8 @@ Code:
         "parameters": {"max_new_tokens": 1000, "temperature": 0.2, "top_p": 0.95},
         "options": {"use_cache": False}
     }
-
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     try:
         response = requests.post(API_URL, headers=headers, json=payload)
         response.raise_for_status()
@@ -55,6 +58,28 @@ Code:
             return None
 
         analysis = result[0]["generated_text"]
+
+        # new lines added to save to mongoDB
+
+        # Get MongoDB URI from environment variable
+        mongo_uri = os.getenv("MONGO_URI")
+
+        if not mongo_uri:
+            raise ValueError("MONGO_URI environment variable is not set!")
+
+        # Connect to MongoDB Atlas
+        client = MongoClient(mongo_uri)
+        db = client["Analysis"]
+        #client.admin.command('ping')
+        logger.info("Successfully connected to MongoDB.")
+        collection = db["llmAnalysis"]
+        #collection.insert_one({"analysis": "test analysis output"})
+        document = {
+            "analysis": analysis  # Assuming 'analysis' is the string you want to save
+        }
+        collection.insert_one(document)
+
+        # end of new lines
         return analysis.strip()
 
     except requests.exceptions.RequestException as e:

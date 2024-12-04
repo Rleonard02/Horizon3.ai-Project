@@ -2,6 +2,7 @@ import React from 'react';
 import RepoFetcher from './components/RepoFetcher'; 
 import "./App.css";
 import QueryForm from './components/query_interface';
+import QueryLLM from './components/llm_interface';
 //import Login from "./Pages/Login";
 //import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -19,6 +20,8 @@ function App() {
       <RepoFetcher />
       <h1>Query Metadata</h1>
       <QueryForm />
+      <h1>Query LLM Reports</h1>
+      <QueryLLM />
     </div>
   );
 }
