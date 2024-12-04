@@ -1,0 +1,5 @@
+# codeql_analysis_module/requirements.txt
+
+kubernetes
+requests
+PyYAML

@@ -1,15 +1,27 @@
+# webhook-receiver/Dockerfile
+
 FROM python:3.9-slim
 
+# Install necessary packages, including git
+RUN apt-get update && \
+    apt-get install -y git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set environment variables to suppress GitPython warnings
+ENV GIT_PYTHON_REFRESH=quiet
+
+# Set the working directory
 WORKDIR /app
 
-# Install git and dependencies
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt requirements.txt
+# Copy and install dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py app.py
+# Copy the application code
+COPY app.py /app/
 
-VOLUME ["/shared"]
+# Expose the port
+EXPOSE 5001
 
+# Define the default command
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5001"]

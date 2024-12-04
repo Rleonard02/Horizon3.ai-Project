@@ -1,34 +1,14 @@
-# Use the official Python slim image
-FROM python:3.9-slim
+# Use the official SonarQube image
+FROM sonarqube:community
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV SONARQUBE_URL=http://sonarqube:9000
-ENV SONARQUBE_DOCKER_URL=http://sonarqube:9000
+# Install Sonar Scanner CLI
+RUN apt-get update && apt-get install -y curl unzip \
+    && curl -o sonar-scanner-cli.zip -L "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip" \
+    && unzip sonar-scanner-cli.zip -d /opt \
+    && rm sonar-scanner-cli.zip
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y git curl unzip && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set the working directory
-WORKDIR /app
-
-# Copy requirements and install
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy scripts and configurations
-COPY scripts/ /app/scripts/
-COPY sonarqube/ /app/sonarqube/
-COPY .sonarqube_env /app/.sonarqube_env
-
-# Copy entrypoint script
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# Expose SonarQube port if needed
+# Expose the default SonarQube port
 EXPOSE 9000
 
-# Set the entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Run SonarQube in the background and the scanner in the foreground
+CMD ["bash", "-c", "/opt/sonarqube/bin/run.sh & /opt/sonar-scanner-cli-4.6.2.2472-linux/bin/sonar-scanner -Dsonar.projectKey=my_project -Dsonar.sources=/usr/src/project"]
