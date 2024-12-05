@@ -1,0 +1,4 @@
+# sonarqube_module/scripts/requirements.txt
+
+gitpython
+requests

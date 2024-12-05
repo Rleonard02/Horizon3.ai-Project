@@ -1,6 +1,8 @@
+#binary_diff_module/Dockerfile
+
 # Dockerfile in binary-analysis service
 FROM python:3.9-slim
-WORKDIR /app
+WORKDIR /bin_app
 
 # Install dependencies
 COPY requirements.txt requirements.txt
@@ -17,7 +19,7 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 
 # Copy the script and Kubernetes manifests
 COPY module_script.py module_script.py
-COPY kubernetes/ /app/kubernetes/
+COPY kubernetes/ /bin_app/kubernetes/
 
 # Set the entrypoint to run module_script.py
 CMD ["python", "module_script.py"]

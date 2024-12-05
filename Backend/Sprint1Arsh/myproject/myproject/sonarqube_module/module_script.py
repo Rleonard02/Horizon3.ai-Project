@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # sonarqube_module/module_script.py
 
 import os
@@ -18,11 +20,11 @@ SONARQUBE_ADMIN_TOKEN = os.getenv('SONARQUBE_ADMIN_TOKEN')
 API_SERVICE_URL = os.getenv('API_SERVICE_URL', 'http://api-service:8000/update_status')
 
 # Directories
-INPUT_REPOS_DIR = os.getenv('INPUT_REPOS_DIR', '/shared/sonarqube_module/input_repos')
-OUTPUT_DIR = os.getenv('OUTPUT_DIR', '/shared/sonarqube_module/output')
+INPUT_FILES_DIR = os.getenv('INPUT_FILES_DIR', '/sonarqube_shared/input_files')
+OUTPUT_DIR = os.getenv('OUTPUT_DIR', '/sonarqube_shared/output')
 
 # Path to tokens
-TOKENS_FILE = '/shared/sonarqube_module/shared_data/tokens.json'
+TOKENS_FILE = '/sonarqube_shared/'
 
 # Keep track of processed repositories
 processed_repos = set()
@@ -138,7 +140,7 @@ def notify_api_service(repo_name, vulnerabilities):
         logger.error(f"Exception while notifying API service: {e}")
 
 def process_repository(repo_name, tokens):
-    repo_path = os.path.join(INPUT_REPOS_DIR, repo_name)
+    repo_path = os.path.join(INPUT_FILES_DIR, repo_name)
     if not os.path.isdir(repo_path):
         logger.warning(f"Repository path {repo_path} is not a directory. Skipping.")
         return
@@ -188,10 +190,10 @@ def main():
 
     while True:
         try:
-            repos = os.listdir(INPUT_REPOS_DIR)
+            repos = os.listdir(INPUT_FILES_DIR)
             logger.debug(f"Found repositories: {repos}")
             for repo in repos:
-                repo_path = os.path.join(INPUT_REPOS_DIR, repo)
+                repo_path = os.path.join(INPUT_FILES_DIR, repo)
                 if repo in processed_repos:
                     logger.debug(f"Repository {repo} already processed. Skipping.")
                     continue

@@ -1,38 +1,46 @@
 # sonarqube_module/Dockerfile
 
-# Use the official Python slim image
-FROM python:3.9-slim
+FROM sonarqube:community
 
-LABEL maintainer="your_email@example.com"
+# Switch to root user to install packages
+USER root
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV SONARQUBE_URL=http://sonarqube:9000
+# Install necessary packages
+RUN apt-get update && apt-get install -y curl unzip python3 python3-pip git dos2unix \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y git curl unzip dos2unix && \
-    rm -rf /var/lib/apt/lists/*
+# Copy scripts and entrypoint into the container
+COPY scripts /app/scripts
+COPY entrypoint.sh /app/entrypoint.sh
 
-# Install SonarScanner
-RUN curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip -o /tmp/sonar-scanner.zip && \
-    unzip /tmp/sonar-scanner.zip -d /opt && \
-    rm /tmp/sonar-scanner.zip && \
-    ln -s /opt/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r /app/scripts/requirements.txt
 
-# Set working directory
-WORKDIR /app
+# Install Sonar Scanner CLI
+RUN curl -o sonar-scanner-cli.zip -L "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip" \
+    && unzip sonar-scanner-cli.zip -d /opt \
+    && rm sonar-scanner-cli.zip
 
-# Copy and install Python dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# Install C++ Community Plugin
+RUN mkdir -p /opt/sonarqube/extensions/plugins
+RUN curl -L -o /opt/sonarqube/extensions/plugins/sonar-cxx-plugin.jar \
+    https://github.com/SonarOpenCommunity/sonar-cxx/releases/download/cxx-2.1.0/sonar-cxx-plugin-2.1.0.3143.jar
 
-# Copy scripts and module script
-COPY scripts/ /app/scripts/
-COPY module_script.py /app/
+# Convert line endings
+RUN dos2unix /app/entrypoint.sh && \
+    dos2unix /app/scripts/*.sh && \
+    dos2unix /app/scripts/*.py
 
-# Ensure scripts are executable (if needed)
-RUN chmod +x /app/scripts/*
+# Ensure scripts are executable
+RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/scripts/*.sh /app/scripts/*.py
 
-# Default command (can be overridden by docker-compose)
-CMD ["python", "module_script.py"]
+# Switch back to the sonarqube user
+USER sonarqube
+
+# Set the entrypoint to the custom script
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Expose the default SonarQube port (already exposed in base image)
+EXPOSE 9000

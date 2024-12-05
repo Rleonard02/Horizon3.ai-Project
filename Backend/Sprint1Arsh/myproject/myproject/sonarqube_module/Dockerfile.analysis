@@ -1,0 +1,36 @@
+#sonarqube_module/Dockerfile.analysis
+
+FROM python:3.9-slim
+
+LABEL maintainer="your_email@example.com"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl unzip git dos2unix && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy scripts into the container
+COPY scripts /app/scripts
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r /app/scripts/requirements.txt
+
+# Install Sonar Scanner CLI
+RUN curl -o sonar-scanner-cli.zip -L "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip" \
+    && unzip sonar-scanner-cli.zip -d /opt \
+    && rm sonar-scanner-cli.zip
+
+# Convert line endings
+RUN dos2unix /app/scripts/*.sh && \
+    dos2unix /app/scripts/*.py
+
+# Ensure scripts are executable
+RUN chmod +x /app/scripts/*.sh /app/scripts/*.py
+
+# Entrypoint is defined in docker-compose.yml

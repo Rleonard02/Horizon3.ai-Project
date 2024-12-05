@@ -58,10 +58,10 @@ def extract_function_differences(radiff_output_file):
     return differences
 
 def compile_and_analyze():
-    c_source1 = "/shared/c_source/version1/main.c"
-    c_source2 = "/shared/c_source/version2/main.c"
-    binary_dir = "/shared/input_binaries"
-    output_dir = "/shared/output"
+    c_source1 = "/bin_shared/c_source/version1/main.c"
+    c_source2 = "/bin_shared/c_source/version2/main.c"
+    binary_dir = "/bin_shared/input_binaries"
+    output_dir = "/bin_shared/output"
 
     # Ensure directories exist
     Path(binary_dir).mkdir(parents=True, exist_ok=True)
@@ -74,7 +74,7 @@ def compile_and_analyze():
 
     update_status("running", 20, "Copying binaries to PVC")
     # Copy binaries into the PVC using a temporary Pod
-    create_pod_to_access_output('/app/kubernetes/pvc-access-pod.yaml')
+    create_pod_to_access_output('/bin_app/kubernetes/pvc-access-pod.yaml')
     wait_for_pod_ready('pvc-access-pod')
 
     # Copy local binaries into the Pod's PVC
@@ -121,7 +121,7 @@ def compile_and_analyze():
 
     update_status("running", 60, "Copying decompiled files to PVC")
     # Copy decompiled files into the PVC for radiff job
-    create_pod_to_access_output('/app/kubernetes/pvc-access-pod.yaml')
+    create_pod_to_access_output('/bin_app/kubernetes/pvc-access-pod.yaml')
     wait_for_pod_ready('pvc-access-pod')
 
     # Copy decompiled files into the Pod's PVC
@@ -151,8 +151,8 @@ def compile_and_analyze():
     wait_for_pod_ready('output-access-pod')
 
     # Copy output files from the Pod
-    if copy_output_from_pod('output-access-pod', '/output/radiff_output.txt', '/shared/output/radiff_output.txt'):
-        logger.info("Copied radiff_output.txt from output-access-pod to /shared/output/")
+    if copy_output_from_pod('output-access-pod', '/output/radiff_output.txt', '/bin_shared/output/radiff_output.txt'):
+        logger.info("Copied radiff_output.txt from output-access-pod to /bin_shared/output/")
     else:
         logger.error("Failed to copy radiff_output.txt from output-access-pod")
 
@@ -165,13 +165,13 @@ def compile_and_analyze():
     update_status("running", 80, "Generating diff report")
     # Generate the diff report
     generate_diff_report(
-        radiff_output_file="/shared/output/radiff_output.txt",
-        decompiled_file1="/shared/output/binary1.bin.decompiled.txt",
-        decompiled_file2="/shared/output/binary2.bin.decompiled.txt",
-        report_file="/shared/output/diff_report.txt"
+        radiff_output_file="/bin_shared/output/radiff_output.txt",
+        decompiled_file1="/bin_shared/output/binary1.bin.decompiled.txt",
+        decompiled_file2="/bin_shared/output/binary2.bin.decompiled.txt",
+        report_file="/bin_shared/output/diff_report.txt"
     )
 
-    logger.info("Diff report generated at /shared/output/diff_report.txt")
+    logger.info("Diff report generated at /bin_shared/output/diff_report.txt")
     update_status("completed", 100, "Binary analysis completed")
 
 def compile_file(source_path, output_binary):
@@ -404,8 +404,8 @@ def create_ghidra_job_yaml(binary_name, job_name, job_yaml_path):
         yaml.dump(ghidra_job_manifest, f)
 
 if __name__ == "__main__":
-    shared_dir = '/shared'
-    source_dir = Path("/shared/c_source/version1")
+    shared_dir = '/bin_shared'
+    source_dir = Path("/bin_shared/c_source/version1")
     binary_dir = os.path.join(shared_dir, "input_binaries")
     output_dir = os.path.join(shared_dir, "output")
 
@@ -427,7 +427,7 @@ if __name__ == "__main__":
                     logger.info(f"Deleted processed file: {file}")
                 except Exception as e:
                     logger.error(f"Error deleting file {file}: {e}")
-            version2_dir = Path("/shared/c_source/version2")
+            version2_dir = Path("/bin_shared/c_source/version2")
             for file in version2_dir.glob("*.c"):
                 try:
                     file.unlink()

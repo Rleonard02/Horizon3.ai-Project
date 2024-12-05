@@ -1,12 +1,8 @@
-# api_service/main.py
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from typing import List, Dict
-import asyncio
 import os
-from pathlib import Path
 
 app = FastAPI()
 
@@ -25,8 +21,9 @@ service_statuses: Dict[str, Dict] = {}
 # List of connected WebSocket clients
 clients: List[WebSocket] = []
 
-# Shared output directory (mounted in docker-compose.yml)
-shared_output_dir = "/shared/output"
+# Output directories for different modules
+sonarqube_output_dir = "/sonarqube_shared/output"
+binary_analysis_output_dir = "/bin_shared/output"
 
 # Allowed file extensions for security
 ALLOWED_EXTENSIONS = {'.txt', '.md'}
@@ -62,24 +59,45 @@ async def notify_clients():
         except Exception:
             clients.remove(client)
 
-@app.get("/output_files")
-def list_output_files():
+@app.get("/output_files/{module}")
+def list_output_files(module: str):
+    # Determine the correct directory based on the module
+    if module == "sonarqube":
+        output_dir = sonarqube_output_dir
+    elif module == "binary_analysis":
+        output_dir = binary_analysis_output_dir
+    else:
+        raise HTTPException(status_code=400, detail="Invalid module name")
+
     try:
-        files = os.listdir(shared_output_dir)
+        # List files in the selected directory
+        files = os.listdir(output_dir)
         # Filter files by allowed extensions
         files = [f for f in files if os.path.splitext(f)[1] in ALLOWED_EXTENSIONS]
-        return {"files": files}
+        return {"module": module, "files": files}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error accessing files: {str(e)}")
 
-@app.get("/output_files/{filename}")
-def get_output_file(filename: str):
+@app.get("/output_files/{module}/{filename}")
+def get_output_file(module: str, filename: str):
+    # Determine the correct directory based on the module
+    if module == "sonarqube":
+        output_dir = sonarqube_output_dir
+    elif module == "binary_analysis":
+        output_dir = binary_analysis_output_dir
+    else:
+        raise HTTPException(status_code=400, detail="Invalid module name")
+
     safe_filename = os.path.basename(filename)
-    # Check if the file extension is allowed
     _, ext = os.path.splitext(safe_filename)
+
+    # Check file extension for security
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=403, detail="File type not allowed")
-    file_path = os.path.join(shared_output_dir, safe_filename)
+
+    file_path = os.path.join(output_dir, safe_filename)
+
+    # Return the file if it exists
     if os.path.isfile(file_path):
         return FileResponse(path=file_path, filename=safe_filename)
     else:

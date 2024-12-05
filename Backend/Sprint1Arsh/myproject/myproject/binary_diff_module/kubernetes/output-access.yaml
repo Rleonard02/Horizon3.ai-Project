@@ -1,4 +1,4 @@
-# kubernetes/output-access.yaml
+# binary_diff_module/kubernetes/output-access.yaml
 apiVersion: v1
 kind: Pod
 metadata:

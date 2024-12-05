@@ -1,3 +1,5 @@
+#binary_diff_module/kubernetes/input-output-pvc.yaml
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

@@ -1,6 +1,6 @@
 # docker-compose.yml
 
-version: '3.8'  # Ensure compatibility with your Docker Compose version
+version: '3.8'
 
 services:
   # Nginx Frontend
@@ -34,8 +34,8 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - ./binary_diff_module/shared_data:/shared/binary_diff_module/shared_data
-      - ./sonarqube_module/shared_data:/shared/sonarqube_module/shared_data
+      - ./binary_diff_module/shared_data:/bin_shared
+      - ./sonarqube_module/shared_data:/sonarqube_shared
     networks:
       - webnet
 
@@ -44,9 +44,9 @@ services:
     build: ./binary_diff_module
     container_name: myproject-binary-analysis
     volumes:
-      - ./binary_diff_module/shared_data:/shared/binary_diff_module/shared_data
+      - ./binary_diff_module/shared_data:/bin_shared
       - ~/.kube/config:/root/.kube/config:ro
-      - ./binary_diff_module/kubernetes:/app/kubernetes
+      - ./binary_diff_module/kubernetes:/bin_app/kubernetes
     networks:
       - webnet
     depends_on:
@@ -58,13 +58,15 @@ services:
     build: ./LLM_Modules/Llama3.2_11B
     container_name: myproject-llm-module
     volumes:
-      - ./binary_diff_module/shared_data:/shared/binary_diff_module/shared_data
+      - ./binary_diff_module/shared_data:/bin_shared
+      - ./sonarqube_module/shared_data:/sonarqube_shared
     environment:
       - HUGGINGFACE_API_TOKEN=${HUGGINGFACE_API_TOKEN}
     networks:
       - webnet
     depends_on:
       - binary-analysis
+      - sonarqube-analysis
     restart: unless-stopped
 
   # API Service
@@ -74,10 +76,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./binary_diff_module/shared_data/output:/shared/output
+      - ./binary_diff_module/shared_data/output:/bin_shared/output
+      - ./sonarqube_module/shared_data/output:/sonarqube_shared/output
     networks:
       - webnet
     restart: unless-stopped
+    environment:
+      - SONARQUBE_TOKEN=${SONARQUBE_TOKEN}
 
   # Frontend Service
   frontend:
@@ -93,7 +98,7 @@ services:
 
   # SonarQube PostgreSQL Database
   db:
-    image: postgres:12
+    image: postgres:13
     container_name: sonarqube_db
     environment:
       POSTGRES_USER: sonar
@@ -104,14 +109,16 @@ services:
     networks:
       - analysis_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "sonar"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "pg_isready -U sonar"]
+      interval: 30s
+      timeout: 10s
       retries: 5
+
+
 
   # SonarQube Server
   sonarqube:
-    image: sonarqube:lts-community
+    image: sonarqube:9.9-community
     container_name: sonarqube
     ports:
       - "9000:9000"
@@ -135,65 +142,33 @@ services:
       timeout: 10s
       retries: 5
 
-  # SonarQube Initialization
-  sonarqube-init:
-    build: ./sonarqube_module
-    container_name: sonarqube-init
-    volumes:
-      - ./sonarqube_module/shared_data:/shared/sonarqube_module/shared_data
-      - ./sonarqube_module/input_repos:/shared/sonarqube_module/input_repos
-      - ./sonarqube_module/output:/shared/sonarqube_module/output
-      - ./sonarqube_module/scripts:/app/scripts
-    networks:
-      - analysis_network
-    depends_on:
-      sonarqube:
-        condition: service_healthy
-    environment:
-      - SONARQUBE_URL=http://sonarqube:9000
-      - SONARQUBE_ADMIN_USER=${SONARQUBE_ADMIN_USER}
-      - SONARQUBE_ADMIN_PASSWORD=${SONARQUBE_ADMIN_PASSWORD}
-      - NEW_SONARQUBE_ADMIN_PASSWORD=${NEW_SONARQUBE_ADMIN_PASSWORD}
-    entrypoint: ["python", "scripts/sonarqube_init.py"]
-    restart: "no"  # Prevent restarting after completion
 
-  # SonarQube Analysis Module
+
+  # SonarQube Analysis Service
   sonarqube-analysis:
-    build: ./sonarqube_module
-    container_name: myproject-sonarqube-analysis
+    build:
+      context: ./sonarqube_module
+      dockerfile: Dockerfile.analysis  # Use the separate Dockerfile.analysis
+    container_name: sonarqube-analysis
     volumes:
-      - ./sonarqube_module/shared_data:/shared/sonarqube_module/shared_data
-      - ./sonarqube_module/input_repos:/shared/sonarqube_module/input_repos
-      - ./sonarqube_module/output:/shared/sonarqube_module/output
-      - ./sonarqube_module/scripts:/app/scripts
+      - ./sonarqube_module/shared_data:/sonarqube_shared
+      - ./sonarqube_module/scripts:/sonarqube_app/scripts
+      - ./sonarqube_module/.sonarqube_env:/sonarqube_app/.sonarqube_env  # Persist token
     networks:
       - webnet
       - analysis_network
     depends_on:
-      webhook-receiver:
-        condition: service_started
-      api-service:
-        condition: service_started
       sonarqube:
         condition: service_healthy
-      sonarqube-init:
-        condition: service_completed_successfully
+      api-service:
+        condition: service_started
     environment:
-      - API_SERVICE_URL=http://api-service:8000/update_status
-      - INPUT_REPOS_DIR=/shared/sonarqube_module/input_repos
-      - OUTPUT_DIR=/shared/sonarqube_module/output
       - SONARQUBE_URL=http://sonarqube:9000
-      - SONARQUBE_ADMIN_TOKEN=${SONARQUBE_ADMIN_TOKEN}
-      - SONARQUBE_ADMIN_USER=${SONARQUBE_ADMIN_USER}
+      - SONARQUBE_ADMIN_USERNAME=${SONARQUBE_ADMIN_USERNAME}
       - SONARQUBE_ADMIN_PASSWORD=${SONARQUBE_ADMIN_PASSWORD}
-      - NEW_SONARQUBE_ADMIN_PASSWORD=${NEW_SONARQUBE_ADMIN_PASSWORD}
-    command: ["python", "module_script.py"]
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'python module_script.py' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: unless-stopped
+    entrypoint: ["bash", "/sonarqube_app/scripts/run_sonarqube_pipeline.sh"]
+    restart: "no"  # Prevent restarting after completion
+
 
 networks:
   webnet:

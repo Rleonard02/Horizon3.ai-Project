@@ -1,114 +1,124 @@
 # webhook-receiver/app.py
 
-from fastapi import FastAPI, Request, HTTPException
 import os
-from git import Repo
-import shutil
+import json
 import logging
+import shutil
+from git import Repo
+from fastapi import FastAPI, Request, HTTPException
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn.error")
 
-# Paths
-shared_dir = '/shared'
+# Paths for Binary Analysis
+BINARY_SHARED_DIR = '/bin_shared'
+BINARY_REPOS_DIR = os.path.join(BINARY_SHARED_DIR, 'repos')
+BINARY_VERSION1_DIR = os.path.join(BINARY_SHARED_DIR, 'c_source', 'version1')
+BINARY_VERSION2_DIR = os.path.join(BINARY_SHARED_DIR, 'c_source', 'version2')
 
-# SonarQube Analysis Paths
-sonarqube_shared_dir = os.path.join(shared_dir, 'sonarqube_module', 'shared_data')
-sonarqube_repos_dir = os.path.join(sonarqube_shared_dir, 'repos')
-sonarqube_input_repos = os.path.join(sonarqube_shared_dir, 'input_repos')
-sonarqube_output_dir = os.path.join(sonarqube_shared_dir, 'output')
-
-# Binary Analysis Paths
-binary_shared_dir = os.path.join(shared_dir, 'binary_diff_module', 'shared_data')
-binary_repos_dir = os.path.join(binary_shared_dir, 'repos')
-binary_input_repos = os.path.join(binary_shared_dir, 'input_repos')
-binary_output_dir = os.path.join(binary_shared_dir, 'output')
+# Paths for SonarQube
+SONARQUBE_SHARED_DIR = '/sonarqube_shared'
+SONARQUBE_REPOS_DIR = os.path.join(SONARQUBE_SHARED_DIR, 'repos')
+SONARQUBE_INPUT_FILES_DIR = os.path.join(SONARQUBE_SHARED_DIR, 'input_files')
 
 @app.post("/webhook")
 async def webhook(request: Request):
+    
     payload = await request.json()
     logger.info(f"Received payload: {payload}")
 
     # Extract repository information
-    repo_info = payload.get('repository', {})
-    repo_url = repo_info.get('clone_url')
-    repo_name = repo_info.get('name')
-    commits = payload.get('commits', [])
-    default_branch = repo_info.get('default_branch', 'main')  # e.g., 'main' or 'master'
+    repo_url = payload['repository']['clone_url']
+    repo_name = payload['repository']['name']
+    commits = payload['commits']
+    default_branch = payload['repository']['default_branch']
 
-    if not repo_url or not repo_name:
-        logger.error("Invalid payload: Missing repository information.")
-        raise HTTPException(status_code=400, detail="Invalid payload: Missing repository information.")
+    # Get the current and previous commits from 'after' and 'before'
+    current_commit = payload['after']
+    parent_commit = payload['before']
 
-    # Define repository paths
-    repo_path_sonarqube = os.path.join(sonarqube_repos_dir, repo_name)
-    repo_path_binary = os.path.join(binary_repos_dir, repo_name)
-
-    # Ensure directories exist
-    os.makedirs(sonarqube_repos_dir, exist_ok=True)
-    os.makedirs(sonarqube_input_repos, exist_ok=True)
-    os.makedirs(sonarqube_output_dir, exist_ok=True)
-    os.makedirs(binary_repos_dir, exist_ok=True)
-    os.makedirs(binary_input_repos, exist_ok=True)
-    os.makedirs(binary_output_dir, exist_ok=True)
-
-    # Clone or pull the repository for SonarQube Analysis
-    try:
-        if os.path.exists(repo_path_sonarqube):
-            repo_sonarqube = Repo(repo_path_sonarqube)
-            origin_sonarqube = repo_sonarqube.remotes.origin
-            # Ensure we are on the default branch before pulling
-            repo_sonarqube.git.checkout(default_branch)
-            origin_sonarqube.pull()
-            logger.info(f"Updated existing repository for SonarQube Analysis: {repo_path_sonarqube}")
-        else:
-            logger.info(f"Cloning repository for SonarQube Analysis to: {repo_path_sonarqube}")
-            Repo.clone_from(repo_url, repo_path_sonarqube)
-            logger.info("Repository cloned for SonarQube Analysis successfully.")
-    except Exception as e:
-        logger.error(f"Failed to clone or update repository for SonarQube Analysis: {e}")
-        raise HTTPException(status_code=500, detail="Failed to clone or update repository for SonarQube Analysis.")
+    # Ensure directories exist for Binary Analysis
+    os.makedirs(BINARY_VERSION1_DIR, exist_ok=True)
+    os.makedirs(BINARY_VERSION2_DIR, exist_ok=True)
+    os.makedirs(BINARY_REPOS_DIR, exist_ok=True)
 
     # Clone or pull the repository for Binary Analysis
-    try:
-        if os.path.exists(repo_path_binary):
-            repo_binary = Repo(repo_path_binary)
-            origin_binary = repo_binary.remotes.origin
-            # Ensure we are on the default branch before pulling
-            repo_binary.git.checkout(default_branch)
-            origin_binary.pull()
-            logger.info(f"Updated existing repository for Binary Analysis: {repo_path_binary}")
+    binary_repo_path = os.path.join(BINARY_REPOS_DIR, repo_name)
+    if os.path.exists(binary_repo_path):
+        repo = Repo(binary_repo_path)
+        origin = repo.remotes.origin
+        repo.git.checkout(default_branch)
+        origin.pull()
+    else:
+        repo = Repo.clone_from(repo_url, binary_repo_path)
+
+    # Identify changed C files
+    changed_c_files = set()
+    for commit_data in commits:
+        for file_path in commit_data.get('modified', []):
+            if file_path.endswith('.c'):
+                changed_c_files.add(file_path)
+
+    # Process each changed C file
+    for file_path in changed_c_files:
+        # Checkout previous commit and save the file
+        repo.git.checkout(parent_commit)
+        prev_file = os.path.join(binary_repo_path, file_path)
+        if os.path.exists(prev_file):
+            shutil.copy(prev_file, os.path.join(BINARY_VERSION1_DIR, os.path.basename(file_path)))
         else:
-            logger.info(f"Cloning repository for Binary Analysis to: {repo_path_binary}")
-            Repo.clone_from(repo_url, repo_path_binary)
-            logger.info("Repository cloned for Binary Analysis successfully.")
-    except Exception as e:
-        logger.error(f"Failed to clone or update repository for Binary Analysis: {e}")
-        raise HTTPException(status_code=500, detail="Failed to clone or update repository for Binary Analysis.")
+            open(os.path.join(BINARY_VERSION1_DIR, os.path.basename(file_path)), 'w').close()
 
-    # Copy the SonarQube repository to input_repos for analysis
+        # Checkout current commit and save the file
+        repo.git.checkout(current_commit)
+        curr_file = os.path.join(binary_repo_path, file_path)
+        if os.path.exists(curr_file):
+            shutil.copy(curr_file, os.path.join(BINARY_VERSION2_DIR, os.path.basename(file_path)))
+        else:
+            open(os.path.join(BINARY_VERSION2_DIR, os.path.basename(file_path)), 'w').close()
+
+    # Reset to default branch
+    repo.git.checkout(default_branch)
+
+    logger.info("Binary analysis files prepared.")
+
+    # Now handle SonarQube file copying
+    # Ensure directories exist for SonarQube
+    os.makedirs(SONARQUBE_REPOS_DIR, exist_ok=True)
+    os.makedirs(SONARQUBE_INPUT_FILES_DIR, exist_ok=True)
+
+    # Clone or update repository for SonarQube Analysis
+    repo_path_sonarqube = os.path.join(SONARQUBE_REPOS_DIR, repo_name)
+    if os.path.exists(repo_path_sonarqube):
+        logger.info(f"Updating existing repository for SonarQube Analysis: {repo_path_sonarqube}")
+        repo_sonar = Repo(repo_path_sonarqube)
+        origin = repo_sonar.remotes.origin
+        repo_sonar.git.checkout(default_branch)
+        origin.pull()
+    else:
+        logger.info(f"Cloning repository for SonarQube Analysis to: {repo_path_sonarqube}")
+        repo_sonar = Repo.clone_from(repo_url, repo_path_sonarqube)
+        repo_sonar.git.checkout(default_branch)
+
+    # Copy only the version2 (current) files to SonarQube input_files
     try:
-        repo_destination_sonarqube = os.path.join(sonarqube_input_repos, repo_name)
-        if os.path.exists(repo_destination_sonarqube):
-            logger.warning(f"Repository {repo_name} already exists in SonarQube Analysis input_repos. Overwriting...")
-            shutil.rmtree(repo_destination_sonarqube)
-        shutil.copytree(repo_path_sonarqube, repo_destination_sonarqube)
-        logger.info(f"Copied repository {repo_name} to SonarQube Analysis input_repos")
-    except Exception as e:
-        logger.error(f"Failed to copy repository to SonarQube Analysis input_repos: {e}")
-        raise HTTPException(status_code=500, detail="Failed to copy repository for SonarQube Analysis.")
+        # Ensure the input_files directory for this repo exists
+        repo_destination_sonarqube = os.path.join(SONARQUBE_INPUT_FILES_DIR, repo_name)
+        os.makedirs(repo_destination_sonarqube, exist_ok=True)
 
-    # Copy the Binary Analysis repository to input_repos for analysis
-    try:
-        repo_destination_binary = os.path.join(binary_input_repos, repo_name)
-        if os.path.exists(repo_destination_binary):
-            logger.warning(f"Repository {repo_name} already exists in Binary Analysis input_repos. Overwriting...")
-            shutil.rmtree(repo_destination_binary)
-        shutil.copytree(repo_path_binary, repo_destination_binary)
-        logger.info(f"Copied repository {repo_name} to Binary Analysis input_repos")
-    except Exception as e:
-        logger.error(f"Failed to copy repository to Binary Analysis input_repos: {e}")
-        raise HTTPException(status_code=500, detail="Failed to copy repository for Binary Analysis.")
+        # Iterate over version2 files and copy them to SonarQube input_files
+        for file_name in os.listdir(BINARY_VERSION2_DIR):
+            src_file = os.path.join(BINARY_VERSION2_DIR, file_name)
+            dest_file = os.path.join(repo_destination_sonarqube, file_name)
+            if os.path.isfile(src_file):
+                shutil.copy(src_file, dest_file)
+                logger.info(f"Copied {file_name} to SonarQube input_files")
+            else:
+                logger.warning(f"Skipping non-file {file_name}")
 
-    # Return success message
-    return {"message": "Webhook processed and repository updated for analysis"}
+        logger.info(f"SonarQube input_files prepared for repository: {repo_name}")
+    except Exception as e:
+        logger.error(f"Failed to copy files to SonarQube input_files: {e}")
+        raise HTTPException(status_code=500, detail="Failed to copy files for SonarQube Analysis.")
+
+    return {"message": "Webhook processed for binary analysis and SonarQube analysis."}

@@ -1,3 +1,5 @@
+#binary_diff_module/kubernetes/radiff-job.yaml
+
 apiVersion: batch/v1
 kind: Job
 metadata:

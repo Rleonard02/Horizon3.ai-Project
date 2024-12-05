@@ -1,19 +1,21 @@
+#binary_diff_module/kubernetes/pvc-access-pod.yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
   name: pvc-access-pod
 spec:
   containers:
-  - command:
-    - sleep
-    - '3600'
-    image: alpine:latest
-    name: pvc-access
-    volumeMounts:
-    - mountPath: /storage
-      name: input-output-storage
+    - command:
+        - sleep
+        - "3600"
+      image: alpine:latest
+      name: pvc-access
+      volumeMounts:
+        - mountPath: /storage
+          name: input-output-storage
   restartPolicy: Never
   volumes:
-  - name: input-output-storage
-    persistentVolumeClaim:
-      claimName: input-output-pvc
+    - name: input-output-storage
+      persistentVolumeClaim:
+        claimName: input-output-pvc

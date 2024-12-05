@@ -1,3 +1,5 @@
+#binary_diff_module/Dockerfile.radiff
+
 FROM radare/radare2
 
 

@@ -1,3 +1,6 @@
+#binary_diff_module/docker-compose.yml
+
+
 version: "3"
 services:
   ghidra-decompiler:

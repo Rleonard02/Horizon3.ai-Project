@@ -1,3 +1,5 @@
+#binary_diff_module/kubernetes/ghidra-job-binary1-bin.yaml
+
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -9,17 +11,17 @@ spec:
         app: ghidra-decompiler
     spec:
       containers:
-      - args:
-        - decompile
-        - /app/input_binaries/binary1.bin
-        image: cincan/ghidra-decompiler:latest
-        name: ghidra-decompiler
-        volumeMounts:
-        - mountPath: /app/input_binaries
-          name: input-output-storage
-          subPath: input_binaries
+        - args:
+            - decompile
+            - /app/input_binaries/binary1.bin
+          image: cincan/ghidra-decompiler:latest
+          name: ghidra-decompiler
+          volumeMounts:
+            - mountPath: /app/input_binaries
+              name: input-output-storage
+              subPath: input_binaries
       restartPolicy: Never
       volumes:
-      - name: input-output-storage
-        persistentVolumeClaim:
-          claimName: input-output-pvc
+        - name: input-output-storage
+          persistentVolumeClaim:
+            claimName: input-output-pvc
