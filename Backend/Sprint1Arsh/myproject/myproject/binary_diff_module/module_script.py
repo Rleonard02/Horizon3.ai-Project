@@ -9,8 +9,12 @@ import shutil
 from pathlib import Path
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+from kubernetes.client.configuration import Configuration
 import logging
 import requests  # Imported requests module for HTTP requests
+import urllib3  # Add this import
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -230,7 +234,6 @@ def extract_function_code(decompiled_code, function_name):
 
 def submit_kubernetes_job(job_manifest_path):
     try:
-        config.load_kube_config()
         batch_v1 = client.BatchV1Api()
         with open(job_manifest_path) as f:
             job_manifest = yaml.safe_load(f)
@@ -249,7 +252,6 @@ def submit_kubernetes_job(job_manifest_path):
 
 def wait_for_job_completion(job_name, timeout=600):
     try:
-        config.load_kube_config()
         batch_v1 = client.BatchV1Api()
         start_time = time.time()
         while time.time() - start_time < timeout:
@@ -271,7 +273,6 @@ def wait_for_job_completion(job_name, timeout=600):
 
 def create_pod_to_access_output(pod_manifest_path):
     try:
-        config.load_kube_config()
         core_v1 = client.CoreV1Api()
         with open(pod_manifest_path) as f:
             pod_manifest = yaml.safe_load(f)
@@ -289,7 +290,6 @@ def create_pod_to_access_output(pod_manifest_path):
 
 def wait_for_pod_ready(pod_name, timeout=300):
     try:
-        config.load_kube_config()
         core_v1 = client.CoreV1Api()
         start_time = time.time()
         while time.time() - start_time < timeout:
@@ -321,7 +321,6 @@ def copy_output_from_pod(pod_name, remote_path, local_path):
 
 def delete_pod(pod_name):
     try:
-        config.load_kube_config()
         core_v1 = client.CoreV1Api()
         core_v1.delete_namespaced_pod(name=pod_name, namespace='default', body=client.V1DeleteOptions())
         logger.info(f"Pod {pod_name} deleted.")
@@ -330,7 +329,6 @@ def delete_pod(pod_name):
 
 def delete_job(job_name):
     try:
-        config.load_kube_config()
         batch_v1 = client.BatchV1Api()
         batch_v1.delete_namespaced_job(
             name=job_name,
@@ -341,19 +339,22 @@ def delete_job(job_name):
         logger.error(f"Error deleting job {job_name}: {e}")
 
 def get_job_logs(job_name, output_file):
-    config.load_kube_config()
-    core_v1 = client.CoreV1Api()
-    label_selector = f'job-name={job_name}'
-    pods = core_v1.list_namespaced_pod(namespace='default', label_selector=label_selector)
-    if not pods.items:
-        logger.error(f"No pods found for job {job_name}")
+    try:
+        core_v1 = client.CoreV1Api()
+        label_selector = f'job-name={job_name}'
+        pods = core_v1.list_namespaced_pod(namespace='default', label_selector=label_selector)
+        if not pods.items:
+            logger.error(f"No pods found for job {job_name}")
+            return False
+        pod_name = pods.items[0].metadata.name
+        logs = core_v1.read_namespaced_pod_log(name=pod_name, namespace='default')
+        with open(output_file, 'w') as f:
+            f.write(logs)
+        logger.info(f"Saved decompiled output from job {job_name} to {output_file}")
+        return True
+    except ApiException as e:
+        logger.error(f"Error retrieving logs for job {job_name}: {e}")
         return False
-    pod_name = pods.items[0].metadata.name
-    logs = core_v1.read_namespaced_pod_log(name=pod_name, namespace='default')
-    with open(output_file, 'w') as f:
-        f.write(logs)
-    logger.info(f"Saved decompiled output from job {job_name} to {output_file}")
-    return True
 
 def create_ghidra_job_yaml(binary_name, job_name, job_yaml_path):
     ghidra_job_manifest = {
@@ -376,12 +377,12 @@ def create_ghidra_job_yaml(binary_name, job_name, job_yaml_path):
                             "image": "cincan/ghidra-decompiler:latest",
                             "args": [
                                 "decompile",
-                                f"/app/input_binaries/{binary_name}"
+                                f"/bin_app/input_binaries/{binary_name}"
                             ],
                             "volumeMounts": [
                                 {
                                     "name": "input-output-storage",
-                                    "mountPath": "/app/input_binaries",
+                                    "mountPath": "/bin_app/input_binaries",
                                     "subPath": "input_binaries"
                                 }
                             ]
@@ -412,6 +413,17 @@ if __name__ == "__main__":
     # Ensure the directories exist
     os.makedirs(binary_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
+
+    # Load Kubernetes configuration once and disable SSL verification
+    try:
+        config.load_kube_config()
+        configuration = Configuration.get_default_copy()
+        configuration.verify_ssl = False  # Disable SSL verification
+        Configuration.set_default(configuration)
+        logger.info("Kubernetes client configuration loaded with SSL verification disabled.")
+    except Exception as e:
+        logger.error(f"Failed to load Kubernetes configuration: {e}")
+        sys.exit(1)
 
     logger.info("Monitoring for incoming files...")
     update_status("idle", 0, "Waiting for source files")

@@ -17,10 +17,10 @@ spec:
             - /bin/sh
             - -c
             - |
-              radiff2 -A -C /app/input_binaries/binary1.bin /app/input_binaries/binary2.bin > /output/radiff_output.txt
+              radiff2 -A -C /bin_app/input_binaries/binary1.bin /app/input_binaries/binary2.bin > /output/radiff_output.txt
           volumeMounts:
             - name: input-output-storage
-              mountPath: /app/input_binaries
+              mountPath: /bin_app/input_binaries
               subPath: input_binaries
             - name: input-output-storage
               mountPath: /output
