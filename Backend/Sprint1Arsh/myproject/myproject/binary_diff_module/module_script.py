@@ -78,7 +78,7 @@ def compile_and_analyze():
 
     update_status("running", 20, "Copying binaries to PVC")
     # Copy binaries into the PVC using a temporary Pod
-    create_pod_to_access_output('/bin_app/kubernetes/pvc-access-pod.yaml')
+    create_pod_to_access_output('/app/kubernetes/pvc-access-pod.yaml')
     wait_for_pod_ready('pvc-access-pod')
 
     # Copy local binaries into the Pod's PVC
@@ -377,12 +377,12 @@ def create_ghidra_job_yaml(binary_name, job_name, job_yaml_path):
                             "image": "cincan/ghidra-decompiler:latest",
                             "args": [
                                 "decompile",
-                                f"/bin_app/input_binaries/{binary_name}"
+                                f"/app/input_binaries/{binary_name}"
                             ],
                             "volumeMounts": [
                                 {
                                     "name": "input-output-storage",
-                                    "mountPath": "/bin_app/input_binaries",
+                                    "mountPath": "/app/input_binaries",
                                     "subPath": "input_binaries"
                                 }
                             ]
