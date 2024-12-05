@@ -1,4 +1,7 @@
+// frontend/src/components/OutputFiles.js
+
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 function OutputFiles({ files }) {
   const [selectedFileContent, setSelectedFileContent] = useState('');
@@ -20,19 +23,33 @@ function OutputFiles({ files }) {
       .catch(error => console.error('Error fetching file content:', error));
   };
 
+  const handleDownload = (filename) => {
+    const link = document.createElement('a');
+    link.href = `http://localhost:8000/output_files/${filename}`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div>
       <ul>
         {files.map((filename) => (
           <li key={filename}>
             <button onClick={() => handleFileClick(filename)}>{filename}</button>
+            <button onClick={() => handleDownload(filename)}>Download</button>
           </li>
         ))}
       </ul>
       {selectedFileContent && (
         <div>
           <h3>{selectedFileName}</h3>
-          <pre>{selectedFileContent}</pre>
+          {selectedFileName.endsWith('.md') ? (
+            <ReactMarkdown>{selectedFileContent}</ReactMarkdown>
+          ) : (
+            <pre>{selectedFileContent}</pre>
+          )}
         </div>
       )}
     </div>

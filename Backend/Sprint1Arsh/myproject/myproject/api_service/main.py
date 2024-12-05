@@ -13,7 +13,7 @@ app = FastAPI()
 # Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the exact origins
+    allow_origins=["http://localhost:3000"],  # Adjust for your frontend's URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -81,6 +81,11 @@ def get_output_file(filename: str):
         raise HTTPException(status_code=403, detail="File type not allowed")
     file_path = os.path.join(shared_output_dir, safe_filename)
     if os.path.isfile(file_path):
-        return FileResponse(path=file_path, filename=safe_filename)
+        return FileResponse(
+            path=file_path,
+            filename=safe_filename,
+            media_type='application/octet-stream',
+            headers={'Content-Disposition': f'attachment; filename="{safe_filename}"'}
+        )
     else:
         raise HTTPException(status_code=404, detail="File not found")

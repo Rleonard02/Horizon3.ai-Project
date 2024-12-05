@@ -7,7 +7,7 @@ SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/Base/lib/slf4j-nop-1.7
 SLF4J: Found binding in [jar:file:/ghidra/Ghidra/Features/GraphServices/lib/slf4j-nop-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]
 SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
 SLF4J: Actual binding is of type [org.slf4j.helpers.NOPLoggerFactory]
-INFO  Class search complete (2010 ms) (ClassSearcher)  
+INFO  Class search complete (3975 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (SSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
@@ -41,10 +41,10 @@ INFO  Creating project: /ghidra/ghidra_projects/ANewProject (DefaultProject)
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
 INFO       project: /ghidra/ghidra_projects/ANewProject (HeadlessAnalyzer)  
 INFO  IMPORTING: /app/input_binaries/binary2.bin (HeadlessAnalyzer)  
-DEBUG Elf symbol table section .dynsym linked to string table section .dynstr (ElfHeader$$EnhancerByCGLIB$$512a7dd7)  
-DEBUG Elf symbol table section .symtab linked to string table section .strtab (ElfHeader$$EnhancerByCGLIB$$512a7dd7)  
-DEBUG Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD (ElfHeader$$EnhancerByCGLIB$$512a7dd7)  
-DEBUG Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt (ElfHeader$$EnhancerByCGLIB$$512a7dd7)  
+DEBUG Elf symbol table section .dynsym linked to string table section .dynstr (ElfHeader$$EnhancerByCGLIB$$ae3f31e6)  
+DEBUG Elf symbol table section .symtab linked to string table section .strtab (ElfHeader$$EnhancerByCGLIB$$ae3f31e6)  
+DEBUG Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD (ElfHeader$$EnhancerByCGLIB$$ae3f31e6)  
+DEBUG Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt (ElfHeader$$EnhancerByCGLIB$$ae3f31e6)  
 DEBUG Loading block .data at 00104008 from file offset 12296 (ElfProgramBuilder)  
 DEBUG Loading block .got.plt at 00103fe8 from file offset 12264 (ElfProgramBuilder)  
 DEBUG Loading block .got at 00103fc0 from file offset 12224 (ElfProgramBuilder)  
@@ -96,38 +96,38 @@ INFO  REPORT: Import succeeded with language "x86:LE:64:default" and cspec "gcc"
 INFO  ANALYZING all memory and code: /app/input_binaries/binary2.bin (HeadlessAnalyzer)  
 INFO  Packed database cache: /tmp/appuser-Ghidra/packed-db-cache (PackedDatabaseCache)  
 DEBUG Caching packed database: /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt (PackedDatabaseCache)  
-DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdb60176534/db.1.gbf (PackedDatabase)  
+DEBUG Unpacking database /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt -> /tmp/appuser-Ghidra/packed-db-cache/pdbCC7D74B0/db.1.gbf (PackedDatabase)  
 DEBUG Cache update completed: /ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt (PackedDatabaseCache)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.794 secs
-    Apply Data Archives                        0.772 secs
-    Call Convention ID                         0.118 secs
-    Call-Fixup Installer                       0.003 secs
-    Create Address Tables                      0.015 secs
-    Create Function                            0.003 secs
-    DWARF                                      0.011 secs
-    Data Reference                             0.011 secs
-    Decompiler Switch Analysis                 0.483 secs
-    Demangler GNU                              0.018 secs
-    Disassemble Entry Points                   0.131 secs
-    ELF Scalar Operand References              0.005 secs
-    Embedded Media                             0.006 secs
+    ASCII Strings                              1.289 secs
+    Apply Data Archives                        1.075 secs
+    Call Convention ID                         0.201 secs
+    Call-Fixup Installer                       0.007 secs
+    Create Address Tables                      0.018 secs
+    Create Function                            0.005 secs
+    DWARF                                      0.023 secs
+    Data Reference                             0.013 secs
+    Decompiler Switch Analysis                 0.578 secs
+    Demangler GNU                              0.019 secs
+    Disassemble Entry Points                   0.218 secs
+    ELF Scalar Operand References              0.009 secs
+    Embedded Media                             0.017 secs
     External Entry References                  0.001 secs
-    Function ID                                0.039 secs
-    Function Start Search                      0.068 secs
-    Function Start Search After Code           0.002 secs
-    Function Start Search After Data           0.002 secs
-    GCC Exception Handlers                     0.063 secs
-    Non-Returning Functions - Discovered       0.003 secs
-    Non-Returning Functions - Known            0.004 secs
-    Reference                                  0.028 secs
-    Shared Return Calls                        0.007 secs
-    Stack                                      0.042 secs
-    Subroutine References                      0.010 secs
-    Subroutine References - One Time           0.001 secs
-    x86 Constant Reference Analyzer            0.096 secs
+    Function ID                                0.102 secs
+    Function Start Search                      0.050 secs
+    Function Start Search After Code           0.004 secs
+    Function Start Search After Data           0.003 secs
+    GCC Exception Handlers                     0.098 secs
+    Non-Returning Functions - Discovered       0.012 secs
+    Non-Returning Functions - Known            0.008 secs
+    Reference                                  0.037 secs
+    Shared Return Calls                        0.012 secs
+    Stack                                      0.067 secs
+    Subroutine References                      0.012 secs
+    Subroutine References - One Time           0.000 secs
+    x86 Constant Reference Analyzer            0.114 secs
 -----------------------------------------------------
-     Total Time   2 secs
+     Total Time   3 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Analysis succeeded for file: /app/input_binaries/binary2.bin (HeadlessAnalyzer)  
@@ -487,7 +487,7 @@ void frame_dummy(void)
 undefined8 main(void)
 
 {
-  printf("The sum is?: %d\n",0x14c);
+  printf("The sum is?: %d\n",0x898);
   return 0;
 }
 
