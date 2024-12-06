@@ -1,38 +1,27 @@
-#!/usr/bin/env python3
-
-# sonarqube_module/scripts/create_token.py
-
 import os
-import sys
 import requests
+import sys
 
-SONARQUBE_URL = os.getenv("SONARQUBE_URL", "http://sonarqube:9000")
+SONARQUBE_URL = os.getenv("SONARQUBE_URL", "http://localhost:9000")
 SONARQUBE_ADMIN_USERNAME = os.getenv("SONARQUBE_ADMIN_USERNAME", "admin")
 SONARQUBE_ADMIN_PASSWORD = os.getenv("SONARQUBE_ADMIN_PASSWORD", "admin")
 
 def create_token(token_name):
     api_url = f"{SONARQUBE_URL}/api/user_tokens/generate"
     payload = {"name": token_name}
-    try:
-        response = requests.post(api_url, auth=(SONARQUBE_ADMIN_USERNAME, SONARQUBE_ADMIN_PASSWORD), data=payload)
-    except Exception as e:
-        print(f"Exception occurred while creating token: {e}", file=sys.stderr, flush=True)
-        sys.exit(1)
+    response = requests.post(api_url, auth=(SONARQUBE_ADMIN_USERNAME, SONARQUBE_ADMIN_PASSWORD), data=payload)
 
     if response.status_code == 200:
-        token = response.json().get("token")
-        return token
+        return response.json().get("token")
     elif response.status_code == 400:
         error_msg = response.json().get("errors", [{}])[0].get("msg", "")
         if "already exists" in error_msg:
-            print("Token already exists.", file=sys.stderr, flush=True)
-            return None
+            delete_token(token_name)
+            return create_token(token_name)
         else:
-            print(f"Failed to create token '{token_name}'. Error: {error_msg}", file=sys.stderr, flush=True)
-            sys.exit(1)
+            sys.exit(f"Failed to create token '{token_name}'. Error: {error_msg}")
     else:
-        print(f"Failed to create token. Status Code: {response.status_code}, Response: {response.text}", file=sys.stderr, flush=True)
-        sys.exit(1)
+        sys.exit(f"Failed to create token. Status Code: {response.status_code}, Response: {response.text}")
 
 def delete_token(token_name):
     api_url = f"{SONARQUBE_URL}/api/user_tokens/revoke"

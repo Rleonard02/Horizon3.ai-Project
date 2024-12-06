@@ -40,18 +40,18 @@ services:
       - webnet
 
   # Binary Analysis Module
-  binary-analysis:
-    build: ./binary_diff_module
-    container_name: myproject-binary-analysis
-    volumes:
-      - ./binary_diff_module/shared_data:/bin_shared
-      - ~/.kube/config:/root/.kube/config:ro
-      - ./binary_diff_module/kubernetes:/bin_app/kubernetes
-    networks:
-      - webnet
-    depends_on:
-      - webhook-receiver
-    restart: unless-stopped
+  # binary-analysis:
+  #   build: ./binary_diff_module
+  #   container_name: myproject-binary-analysis
+  #   volumes:
+  #     - ./binary_diff_module/shared_data:/bin_shared
+  #     - ~/.kube/config:/root/.kube/config:ro
+  #     - ./binary_diff_module/kubernetes:/bin_app/kubernetes
+  #   networks:
+  #     - webnet
+  #   depends_on:
+  #     - webhook-receiver
+  #   restart: unless-stopped
 
 
 
@@ -60,15 +60,15 @@ services:
     build: ./LLM_Modules/Llama3.2_11B
     container_name: myproject-llm-module
     volumes:
-      - ./binary_diff_module/shared_data:/bin_shared
+      # - ./binary_diff_module/shared_data:/bin_shared
       - ./sonarqube_module/shared_data:/sonarqube_shared
     environment:
       - HUGGINGFACE_API_TOKEN=${HUGGINGFACE_API_TOKEN}
     networks:
       - webnet
     depends_on:
-      - binary-analysis
-      - sonarqube-analysis
+      # - binary-analysis
+      - sonarqube
     restart: unless-stopped
 
   # API Service
@@ -98,29 +98,8 @@ services:
       - api-service
     restart: unless-stopped
 
-  # SonarQube PostgreSQL Database
-  db:
-    image: postgres:13
-    container_name: sonarqube_db
-    environment:
-      POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar
-      POSTGRES_DB: sonar
-    volumes:
-      - sonar_db:/var/lib/postgresql/data
-    networks:
-      - analysis_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sonar"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-
-
-  # SonarQube Server
   sonarqube:
-    image: sonarqube:9.9-community
+    image: sonarqube:lts-community
     container_name: sonarqube
     ports:
       - "9000:9000"
@@ -134,44 +113,48 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - analysis_network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
-
-
-  # SonarQube Analysis Service
   sonarqube-analysis:
-    build:
+    build: 
       context: ./sonarqube_module
-      dockerfile: Dockerfile.analysis  # Use the separate Dockerfile.analysis
+      dockerfile: Dockerfile
     container_name: sonarqube-analysis
     volumes:
-      - ./sonarqube_module/shared_data:/sonarqube_shared
+      - ./sonarqube_module/scripts:/scripts 
+      - ./sonarqube_module/shared_data:/sonarqube_shared 
+      - ./sonarqube_module/shared_data/output:/sonarqube_shared/output
       - ./sonarqube_module/scripts:/sonarqube_app/scripts
-      - ./sonarqube_module/.sonarqube_env:/sonarqube_app/.sonarqube_env  # Persist token
-    networks:
-      - webnet
-      - analysis_network
+      - ./sonarqube_module/.sonarqube_env:/sonarqube_app/.sonarqube_env
+    entrypoint: ["bash", "./scripts/entrypoint.sh"]  # Script to run
     depends_on:
-      sonarqube:
-        condition: service_healthy
-      api-service:
-        condition: service_started
-    environment:
-      - SONARQUBE_URL=http://sonarqube:9000
-      - SONARQUBE_ADMIN_USERNAME=${SONARQUBE_ADMIN_USERNAME}
-      - SONARQUBE_ADMIN_PASSWORD=${SONARQUBE_ADMIN_PASSWORD}
-    entrypoint: ["bash", "/sonarqube_app/scripts/run_sonarqube_pipeline.sh"]
+      - sonarqube
+    networks:
+      - analysis_network
     restart: "no"  # Prevent restarting after completion
+    environment:
+      - SONARQUBE_TOKEN
+      - SONARQUBE_URL=http://sonarqube:9000
+      - SONARQUBE_ADMIN_USERNAME=admin
+      - SONARQUBE_ADMIN_PASSWORD=admin
 
 
+  db:
+    image: postgres:12
+    container_name: sonarqube_db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar_db:/var/lib/postgresql/data
+    networks:
+      - analysis_network
+
+    
+  
 networks:
   webnet:
     driver: bridge

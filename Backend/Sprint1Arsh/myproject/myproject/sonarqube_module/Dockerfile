@@ -1,46 +1,39 @@
-# sonarqube_module/Dockerfile
+# Base image with Python for script execution
+FROM --platform=linux/amd64 python:3.9-slim
 
-FROM sonarqube:community
+# Set working directory inside the container
+WORKDIR /sonarqube_app
 
-# Switch to root user to install packages
-USER root
+ENV PATH="/opt/sonar-scanner-cli-4.6.2.2472-linux/bin:${PATH}"
 
-# Install necessary packages
-RUN apt-get update && apt-get install -y curl unzip python3 python3-pip git dos2unix \
-    && apt-get autoremove -y \
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy scripts and entrypoint into the container
-COPY scripts /app/scripts
-COPY entrypoint.sh /app/entrypoint.sh
-
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r /app/scripts/requirements.txt
-
-# Install Sonar Scanner CLI
+# Download and install the Sonar Scanner CLI
 RUN curl -o sonar-scanner-cli.zip -L "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip" \
+    && ls -lh sonar-scanner-cli.zip \
+    && unzip -l sonar-scanner-cli.zip \
     && unzip sonar-scanner-cli.zip -d /opt \
+    && mv /opt/sonar-scanner-4.6.2.2472-linux /opt/sonar-scanner-cli-4.6.2.2472-linux \
+    && ls -l /opt \
     && rm sonar-scanner-cli.zip
 
-# Install C++ Community Plugin
-RUN mkdir -p /opt/sonarqube/extensions/plugins
-RUN curl -L -o /opt/sonarqube/extensions/plugins/sonar-cxx-plugin.jar \
-    https://github.com/SonarOpenCommunity/sonar-cxx/releases/download/cxx-2.1.0/sonar-cxx-plugin-2.1.0.3143.jar
 
-# Convert line endings
-RUN dos2unix /app/entrypoint.sh && \
-    dos2unix /app/scripts/*.sh && \
-    dos2unix /app/scripts/*.py
 
-# Ensure scripts are executable
-RUN chmod +x /app/entrypoint.sh
-RUN chmod +x /app/scripts/*.sh /app/scripts/*.py
+# Add SonarScanner to PATH
+ENV PATH="/opt/sonar-scanner-cli-4.6.2.2472-linux/bin:${PATH}"
 
-# Switch back to the sonarqube user
-USER sonarqube
+# Copy analysis scripts into the container
+COPY scripts /sonarqube_app/scripts
 
-# Set the entrypoint to the custom script
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Install Python dependencies for your script (if needed)
+RUN pip install --no-cache-dir -r /sonarqube_app/scripts/requirements.txt
 
-# Expose the default SonarQube port (already exposed in base image)
-EXPOSE 9000
+# Ensure entrypoint script is executable
+RUN chmod +x /sonarqube_app/scripts/entrypoint.sh
+
+# Set the default entrypoint to execute the analysis script
+ENTRYPOINT ["bash", "/sonarqube_app/scripts/entrypoint.sh"]
