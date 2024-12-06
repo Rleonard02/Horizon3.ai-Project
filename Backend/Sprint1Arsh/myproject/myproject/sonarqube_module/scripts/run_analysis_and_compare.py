@@ -27,18 +27,24 @@ if not SONARQUBE_TOKEN:
 # Track processed repositories and their hashes
 processed_repos = {}
 
+def calculate_file_hash(file_path):
+    """Calculate a SHA256 hash for a single file."""
+    sha256 = hashlib.sha256()
+    try:
+        with open(file_path, "rb") as f:
+            while chunk := f.read(8192):
+                sha256.update(chunk)
+    except Exception as e:
+        logger.error(f"Error reading file {file_path}: {e}")
+    return sha256.hexdigest()
+
 def calculate_repo_hash(repo_path):
     """Calculate a SHA256 hash for the repository's content."""
     sha256 = hashlib.sha256()
     for root, _, files in os.walk(repo_path):
         for file in sorted(files):  # Ensure consistent ordering
             file_path = os.path.join(root, file)
-            try:
-                with open(file_path, "rb") as f:
-                    while chunk := f.read(8192):
-                        sha256.update(chunk)
-            except Exception as e:
-                logger.error(f"Error reading file {file_path}: {e}")
+            sha256.update(calculate_file_hash(file_path).encode('utf-8'))
     return sha256.hexdigest()
 
 def wait_for_sonarqube(timeout=120):
@@ -74,29 +80,31 @@ def create_sonarqube_project(project_key, project_name):
 def run_sonarscanner(repo_path, project_key, project_name):
     """Run SonarScanner for the specified project."""
     logger.info(f"Running SonarScanner for project: {project_name}")
+    logger.info(f"SonarScanner will use repo_path: {repo_path}")
+
     sonar_scanner_cmd = [
         "sonar-scanner",
         f"-Dsonar.projectKey={project_key}",
         f"-Dsonar.projectName={project_name}",
-        "-Dsonar.sources=.",
+        f"-Dsonar.sources={repo_path}",
         f"-Dsonar.host.url={SONARQUBE_URL}",
         f"-Dsonar.login={SONARQUBE_TOKEN}",
         "-Dsonar.sourceEncoding=UTF-8",
-        "-Dsonar.verbose=true",
-        "-Dsonar.language=c"
-
-        "-X"
-    ]
+        "-X"    ]
     try:
         result = subprocess.run(
             sonar_scanner_cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            cwd=repo_path
+            cwd=repo_path,
+            timeout=600
         )
+        logger.info(f"SonarScanner output: {result.stdout}")
+        if result.stderr:
+            logger.error(f"SonarScanner error: {result.stderr}")
         if result.returncode != 0:
-            logger.error(f"SonarScanner failed for {project_key}: {result.stderr}")
+            logger.error(f"SonarScanner failed for {project_key}")
             return False
         logger.info(f"SonarScanner completed successfully for project '{project_name}'")
         return True
@@ -111,6 +119,7 @@ def fetch_sonarqube_issues(project_key):
     try:
         response = requests.get(api_url, auth=(SONARQUBE_TOKEN, ''), params=params)
         if response.status_code == 200:
+            logger.info(f"Fetched issues for project {project_key}: {response.json()}")
             return response.json()
         else:
             logger.error(f"Failed to fetch issues for {project_key}: {response.text}")
@@ -147,16 +156,13 @@ def process_repository(repo_name):
 
     logger.info(f"Starting analysis for repository: {repo_name}")
     if create_sonarqube_project(project_key, project_name):
-        for run in range(2):  # Run analysis twice
-            logger.info(f"Run {run + 1}/2 for project: {project_name}")
-            if run_sonarscanner(repo_path, project_key, project_name):
-                vulnerabilities = fetch_sonarqube_issues(project_key)
-                save_results(repo_name, vulnerabilities)
-                # Update the hash after successful analysis
-                processed_repos[repo_name] = repo_hash
-                break
-            else:
-                logger.error(f"SonarScanner failed on run {run + 1} for repository: {repo_name}")
+        if run_sonarscanner(repo_path, project_key, project_name):
+            vulnerabilities = fetch_sonarqube_issues(project_key)
+            save_results(repo_name, vulnerabilities)
+            # Update the hash after successful analysis
+            processed_repos[repo_name] = repo_hash
+        else:
+            logger.error(f"SonarScanner failed for repository: {repo_name}")
         # Clean up temporary files
         scannerwork_path = os.path.join(repo_path, ".scannerwork")
         if os.path.exists(scannerwork_path):

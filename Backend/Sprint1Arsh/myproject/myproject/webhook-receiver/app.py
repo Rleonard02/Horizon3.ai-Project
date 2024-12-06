@@ -100,22 +100,13 @@ async def webhook(request: Request):
         repo_sonar = Repo.clone_from(repo_url, repo_path_sonarqube)
         repo_sonar.git.checkout(default_branch)
 
-    # Copy only the version2 (current) files to SonarQube input_files
+    # Copy the entire repository to SonarQube input_files directory just like repos
     try:
-        # Ensure the input_files directory for this repo exists
         repo_destination_sonarqube = os.path.join(SONARQUBE_INPUT_FILES_DIR, repo_name)
-        os.makedirs(repo_destination_sonarqube, exist_ok=True)
-
-        # Iterate over version2 files and copy them to SonarQube input_files
-        for file_name in os.listdir(BINARY_VERSION2_DIR):
-            src_file = os.path.join(BINARY_VERSION2_DIR, file_name)
-            dest_file = os.path.join(repo_destination_sonarqube, file_name)
-            if os.path.isfile(src_file):
-                shutil.copy(src_file, dest_file)
-                logger.info(f"Copied {file_name} to SonarQube input_files")
-            else:
-                logger.warning(f"Skipping non-file {file_name}")
-
+        # Remove old input_files if it exists
+        if os.path.exists(repo_destination_sonarqube):
+            shutil.rmtree(repo_destination_sonarqube)
+        shutil.copytree(repo_path_sonarqube, repo_destination_sonarqube)
         logger.info(f"SonarQube input_files prepared for repository: {repo_name}")
     except Exception as e:
         logger.error(f"Failed to copy files to SonarQube input_files: {e}")
