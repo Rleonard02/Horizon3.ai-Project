@@ -18,7 +18,7 @@ log "Starting SonarQube and PostgreSQL services..."
 log "Waiting for SonarQube server to become ready..."
 WAIT_TIME=0
 TIMEOUT=120  # Timeout after 120 seconds
-while ! curl -sSf http://localhost:9000 > /dev/null; do
+while ! curl -sSf http://sonarqube:9000 > /dev/null; do
     if [ $WAIT_TIME -ge $TIMEOUT ]; then
         log "Error: SonarQube server did not become ready in time."
         exit 1

@@ -30,15 +30,6 @@ services:
     networks:
       - webnet
 
-  binary-analysis:
-    build: ./binary_diff_module
-    volumes:
-      - ./binary_diff_module/shared_data:/shared
-      - ~/.kube/config:/root/.kube/config
-      - ./binary_diff_module/kubernetes:/app/kubernetes
-    networks:
-      - webnet
-    restart: unless-stopped
 
 networks:
   webnet:

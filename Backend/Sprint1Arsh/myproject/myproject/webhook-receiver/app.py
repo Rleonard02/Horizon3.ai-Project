@@ -1,13 +1,22 @@
-#webhook-receiver/app.py
 from fastapi import FastAPI, Request, HTTPException
 import os
 import subprocess
 from git import Repo
 import shutil
 import logging
+import re
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn.error")
+
+MODEL_SCRIPTS = {
+    "autotrain-qwen-dpo": "autotrain_qwen_dpo.py",
+    "llama-32-11b": "llama_32_11b.py",
+    "qwen-25-32b": "qwen_25_32b.py",
+    "qwen-25-72b": "qwen_25_72b.py"
+}
+
+DEFAULT_MODEL = "qwen-25-72b"
 
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -19,25 +28,33 @@ async def webhook(request: Request):
     commits = payload['commits']
     default_branch = payload['repository']['default_branch']  # Get the default branch name
 
-    # Get the current and previous commits from 'after' and 'before'
-    current_commit = payload['after']
-    parent_commit = payload['before']
+    # Extract the model name from the last commit message
+    commit_message = commits[-1]['message']
+    model_match = re.match(r"\[(.*?)\]", commit_message)
+    model_name = model_match.group(1).lower() if model_match else DEFAULT_MODEL
+    model_script = MODEL_SCRIPTS.get(model_name, MODEL_SCRIPTS[DEFAULT_MODEL])
+
+    logger.info(f"Selected model: {model_name} ({model_script})")
 
     # Paths
     shared_dir = '/shared'
     repo_path = os.path.join(shared_dir, 'repos', repo_name)
-    version1_dir = os.path.join(shared_dir, 'c_source', 'version1')
     version2_dir = os.path.join(shared_dir, 'c_source', 'version2')
+    llm_output_dir = os.path.join(shared_dir, 'llm_output')
 
-    # Ensure directories exist
-    os.makedirs(version1_dir, exist_ok=True)
     os.makedirs(version2_dir, exist_ok=True)
+    os.makedirs(llm_output_dir, exist_ok=True)
+
+    # Clear previous results in the output directory
+    for filename in os.listdir(llm_output_dir):
+        file_path = os.path.join(llm_output_dir, filename)
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
 
     # Clone or pull the repository
     if os.path.exists(repo_path):
         repo = Repo(repo_path)
         origin = repo.remotes.origin
-        # Ensure we are on the default branch before pulling
         repo.git.checkout(default_branch)
         origin.pull()
     else:
@@ -50,34 +67,32 @@ async def webhook(request: Request):
             if file_path.endswith('.c'):
                 changed_files.add(file_path)
 
-    # Process each changed file
+    # Save the current version of each changed file
     for file_path in changed_files:
-        # Checkout previous commit and save the file
-        repo.git.checkout(parent_commit)
-        prev_file = os.path.join(repo_path, file_path)
-        if os.path.exists(prev_file):
-            shutil.copy(prev_file, os.path.join(version1_dir, os.path.basename(file_path)))
-        else:
-            # If file didn't exist in previous commit, create an empty file
-            open(os.path.join(version1_dir, os.path.basename(file_path)), 'w').close()
-
-        # Checkout current commit and save the file
-        repo.git.checkout(current_commit)
         curr_file = os.path.join(repo_path, file_path)
         if os.path.exists(curr_file):
             shutil.copy(curr_file, os.path.join(version2_dir, os.path.basename(file_path)))
-        else:
-            # If file was deleted in current commit, create an empty file
-            open(os.path.join(version2_dir, os.path.basename(file_path)), 'w').close()
 
-    # Reset to default branch
-    repo.git.checkout(default_branch)  # Use the default branch from the payload
+    # Run the selected LLM script on the modified files
+    input_directory = version2_dir
+    for filename in os.listdir(input_directory):
+        if filename.endswith('.c'):
+            input_filepath = os.path.join(input_directory, filename)
+            output_filename = f"{model_name}_analysis_output.md"
+            output_filepath = os.path.join(llm_output_dir, output_filename)
 
-    # Invoke the binary analysis module
-    # try:
-    #     subprocess.check_call(["python", "/app/module_script.py"])
-    # except subprocess.CalledProcessError as e:
-    #     logger.error(f"Binary analysis failed: {e}")
-    #     raise HTTPException(status_code=500, detail="Binary analysis failed")
+            try:
+                result = subprocess.run(
+                    ['python', model_script, input_filepath],
+                    cwd='/app',
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0:
+                    logger.info(f"LLM analysis completed for {filename}")
+                else:
+                    logger.error(f"LLM analysis failed for {filename}: {result.stderr}")
+            except Exception as e:
+                logger.error(f"Exception occurred while running LLM script for {filename}: {e}")
 
-    return {"message": "Webhook processed and binary analysis triggered"}
+    return {"message": "Webhook processed and LLM analysis completed"}

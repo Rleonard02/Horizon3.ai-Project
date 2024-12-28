@@ -33,12 +33,12 @@ if not SONARQUBE_TOKEN:
         exit(1)
 
 # SonarQube server URL
-SONARQUBE_URL = os.getenv("SONARQUBE_URL", "http://localhost:9000")
-SONARQUBE_DOCKER_URL = os.getenv("SONARQUBE_DOCKER_URL", "http://host.docker.internal:9000")
+SONARQUBE_URL = os.getenv("SONARQUBE_URL", "http://sonarqube:9000")
+SONARQUBE_DOCKER_URL = os.getenv("SONARQUBE_DOCKER_URL", "http://sonarqube:9000")
 
 # Define paths
 SONARQUBE_FOLDER = os.path.abspath("../sonarqube")
-SOURCE_CODE_FOLDER = os.path.abspath("../source_code")
+SOURCE_CODE_FOLDER = os.path.abspath("/home/opc/Horizon3.ai-Project/Backend/Sprint1Arsh/myproject/myproject/binary_diff_module/shared_data/c_source/version2")
 SONARQUBE_REPORTS_FOLDER = os.path.join(SONARQUBE_FOLDER, "reports")
 
 # Function to wait for SonarQube server to be ready

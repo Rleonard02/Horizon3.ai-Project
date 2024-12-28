@@ -13,7 +13,7 @@ log "Starting SonarQube and PostgreSQL services using Docker Compose..."
 cd "$(dirname "$0")/../sonarqube"
 
 # Start Docker Compose services in detached mode
-docker-compose up -d
+docker compose up -d
 
 # Check if Docker Compose started successfully
 if [ $? -ne 0 ]; then
